@@ -6,6 +6,13 @@ import { Router } from 'express';
 import authRoutes from './auth.routes';
 import tripsRoutes from './trips.routes';
 import citiesRoutes from './cities.routes';
+import stopsRoutes from './stops.routes';
+import stopsDirectRoutes from './stopsDirectRoutes';
+import {
+  stopActivitiesRouter,
+  stopActivityDirectRouter,
+  activitySearchRouter,
+} from './activities.routes';
 
 const router = Router();
 
@@ -13,6 +20,13 @@ const router = Router();
 router.use('/auth', authRoutes);
 router.use('/trips', tripsRoutes);
 router.use('/cities', citiesRoutes);
+
+// Phase 3 — Stops & Activities
+router.use('/trips/:tripId/stops', stopsRoutes);        // POST /, PATCH /reorder
+router.use('/stops', stopsDirectRoutes);                  // PUT /:id, DELETE /:id
+router.use('/stops/:stopId/activities', stopActivitiesRouter); // POST /
+router.use('/stop-activities', stopActivityDirectRouter);      // PUT /:id, DELETE /:id
+router.use('/activities', activitySearchRouter);                // GET /search
 
 // Health check
 router.get('/health', (_req, res) => {

@@ -25,6 +25,7 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import DashboardPage from './pages/DashboardPage';
 import MyTripsPage from './pages/MyTripsPage';
 import CreateTripPage from './pages/CreateTripPage';
+import ItineraryPage from './pages/ItineraryPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 function AppContent() {
@@ -69,6 +70,14 @@ function AppContent() {
               element={
                 <ProtectedRoute>
                   <CreateTripPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/trips/:id"
+              element={
+                <ProtectedRoute>
+                  <ItineraryPage />
                 </ProtectedRoute>
               }
             />

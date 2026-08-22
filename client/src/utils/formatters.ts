@@ -98,3 +98,16 @@ export function getRelativeTime(dateStr: string): string {
   if (absDays < 30) return `${Math.round(absDays / 7)} weeks ago`;
   return `${Math.round(absDays / 30)} months ago`;
 }
+
+/**
+ * Format an ISO datetime to a time string.
+ * Example: "2026-08-15T14:30:00Z" → "2:30 PM"
+ */
+export function formatTime(dateStr: string): string {
+  const date = new Date(dateStr);
+  return date.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
+}
