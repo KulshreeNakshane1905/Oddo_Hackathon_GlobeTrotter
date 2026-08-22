@@ -41,7 +41,7 @@ export async function authMiddleware(
 
     // Verify token using Supabase Admin client
     const supabase = getSupabaseAdmin();
-    const { data, error } = await supabase.auth.getUser(token);
+    const { data, error } = await (supabase.auth as any).getUser(token);
 
     if (error || !data.user) {
       logger.warn(`Auth failed: ${error?.message || 'No user found'}`);
@@ -78,7 +78,7 @@ export async function optionalAuthMiddleware(
       const token = authHeader.split(' ')[1];
       if (token) {
         const supabase = getSupabaseAdmin();
-        const { data } = await supabase.auth.getUser(token);
+        const { data } = await (supabase.auth as any).getUser(token);
         if (data.user) {
           req.userId = data.user.id;
           req.userEmail = data.user.email;

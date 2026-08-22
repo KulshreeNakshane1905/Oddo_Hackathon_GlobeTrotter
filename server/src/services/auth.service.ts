@@ -29,7 +29,7 @@ export class AuthService {
     const supabase = getSupabaseAdmin();
 
     // 1. Create user in Supabase Auth
-    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+    const { data: authData, error: authError } = await (supabase.auth as any).admin.createUser({
       email: data.email,
       password: data.password,
       email_confirm: true, // Auto-confirm for now; switch to false for email verification
@@ -86,7 +86,7 @@ export class AuthService {
       process.env.SUPABASE_ANON_KEY || ''
     );
 
-    const { data: authData, error: authError } = await anonClient.auth.signInWithPassword({
+    const { data: authData, error: authError } = await (anonClient.auth as any).signInWithPassword({
       email: data.email,
       password: data.password,
     });
@@ -148,7 +148,7 @@ export class AuthService {
       process.env.SUPABASE_ANON_KEY || ''
     );
 
-    const { data, error } = await anonClient.auth.refreshSession({
+    const { data, error } = await (anonClient.auth as any).refreshSession({
       refresh_token: refreshToken,
     });
 
@@ -169,7 +169,7 @@ export class AuthService {
   async forgotPassword(email: string) {
     const supabase = getSupabaseAdmin();
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    const { error } = await (supabase.auth as any).resetPasswordForEmail(email, {
       redirectTo: `${process.env.CORS_ORIGIN}/reset-password`,
     });
 
