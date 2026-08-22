@@ -23,6 +23,8 @@ import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import DashboardPage from './pages/DashboardPage';
+import MyTripsPage from './pages/MyTripsPage';
+import CreateTripPage from './pages/CreateTripPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 function AppContent() {
@@ -51,6 +53,22 @@ function AppContent() {
               element={
                 <ProtectedRoute>
                   <DashboardPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/trips"
+              element={
+                <ProtectedRoute>
+                  <MyTripsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/trips/new"
+              element={
+                <ProtectedRoute>
+                  <CreateTripPage />
                 </ProtectedRoute>
               }
             />
