@@ -27,15 +27,41 @@ export default function ItineraryPage() {
     return <Box sx={{ p: 4 }}>Trip not found.</Box>;
   }
 
-  // Generate some mock activities for visualization since the backend doesn't provide them nested this way natively.
-  const days = trip.stops.map((stop, index) => ({
-    dayLabel: `Day ${index + 1}`,
-    activities: [
-      { id: 1, title: `Visit ${stop.city?.name || 'Local Attraction'}`, expense: '$50.00' },
-      { id: 2, title: 'Lunch at local restaurant', expense: '$35.00' },
-      { id: 3, title: 'Evening Walk & Sightseeing', expense: '$0.00' },
-    ]
-  }));
+  const hasStops = trip.stops && trip.stops.length > 0;
+
+  // Generate some mock activities for visualization if the backend doesn't provide them.
+  const days = hasStops 
+    ? trip.stops.map((stop: any, index: number) => ({
+        dayLabel: `Day ${index + 1}`,
+        activities: stop.activities?.length > 0
+          ? stop.activities.map((a: any) => ({ 
+              id: a.id, 
+              title: a.activity?.name || 'Local Activity', 
+              expense: a.activity?.estimatedCost ? `$${a.activity.estimatedCost}` : '$0.00'
+            }))
+          : [
+              { id: 1, title: `Visit ${stop.city?.name || 'Local Attraction'}`, expense: '$50.00' },
+              { id: 2, title: 'Lunch at local restaurant', expense: '$35.00' },
+              { id: 3, title: 'Evening Walk & Sightseeing', expense: '$0.00' },
+            ]
+      }))
+    : [
+        {
+          dayLabel: 'Day 1',
+          activities: [
+            { id: 1, title: 'Visit Local Attraction (Example)', expense: '$50.00' },
+            { id: 2, title: 'Lunch at local restaurant (Example)', expense: '$35.00' },
+            { id: 3, title: 'Evening Walk & Sightseeing (Example)', expense: '$0.00' },
+          ]
+        },
+        {
+          dayLabel: 'Day 2',
+          activities: [
+            { id: 4, title: 'Museum Tour (Example)', expense: '$20.00' },
+            { id: 5, title: 'Shopping (Example)', expense: '$100.00' },
+          ]
+        }
+      ];
 
   return (
     <Box
