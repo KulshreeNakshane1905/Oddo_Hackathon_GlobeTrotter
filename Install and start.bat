@@ -12,13 +12,13 @@ echo.
 
 echo [2/4] Installing Client Dependencies...
 cd client
-call npm install
+call npm install --legacy-peer-deps
 cd ..
 echo.
 
 echo [3/4] Installing Server Dependencies...
 cd server
-call npm install
+call npm install --legacy-peer-deps
 echo.
 
 echo [4/4] Setting up Database schema...

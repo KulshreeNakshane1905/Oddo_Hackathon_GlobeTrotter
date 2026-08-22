@@ -44,7 +44,8 @@ const localizer = dateFnsLocalizer({
 });
 
 // ── Create DnD-enabled calendar ──────────────────────────────────────────────
-const DnDCalendar = withDragAndDrop<CalendarEventData>(Calendar);
+const withDragAndDropFn = (withDragAndDrop as any).default || withDragAndDrop;
+const DnDCalendar = withDragAndDropFn(Calendar);
 
 interface TripCalendarProps {
   events: TimelineEvent[];
