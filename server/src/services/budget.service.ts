@@ -7,7 +7,8 @@ import { ApiError } from '../utils/ApiError';
 import { logger } from '../utils/logger';
 import { cacheGet, cacheSet, cacheDelete } from '../config/redis';
 
-const prisma = new PrismaClient();
+import prisma from '../utils/prisma';
+
 
 // ── Constants ────────────────────────────────────────────────────────────────
 const BUDGET_CACHE_TTL = 300; // 5 minutes

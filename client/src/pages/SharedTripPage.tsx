@@ -101,3 +101,5 @@ export const SharedTripPage: React.FC = () => {
     </Box>
   );
 };
+
+export default SharedTripPage;

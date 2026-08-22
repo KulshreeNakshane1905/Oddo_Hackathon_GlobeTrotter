@@ -90,7 +90,7 @@ export class UsersController {
    */
   async unsaveCity(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const cityId = req.params.cityId as string;
+      const cityId = String(req.params.cityId) as string;
       await usersService.unsaveCity(req.userId!, cityId);
       ApiResponse.success(res, { message: 'City removed from saved list' });
     } catch (err) {

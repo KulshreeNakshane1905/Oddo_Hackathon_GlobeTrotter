@@ -7,7 +7,8 @@ import { ApiError } from '../utils/ApiError';
 import { logger } from '../utils/logger';
 import { cacheGet, cacheSet, cacheDelete } from '../config/redis';
 
-const prisma = new PrismaClient();
+import prisma from '../utils/prisma';
+
 
 const ACTIVITY_SEARCH_TTL = 60 * 60; // 1 hour
 

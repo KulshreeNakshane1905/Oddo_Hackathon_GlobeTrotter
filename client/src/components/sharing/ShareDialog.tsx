@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import { ContentCopy, QrCode2, LinkOff } from '@mui/icons-material';
 import { useShareTripMutation, useUnshareTripMutation } from '../../store/api/sharingApi';
-import { useGetTripQuery } from '../../store/api/tripsApi';
+import { useGetTripsQuery } from '../../store/api/tripsApi';
 
 interface Props {
   open: boolean;

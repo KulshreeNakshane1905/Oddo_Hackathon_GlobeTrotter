@@ -67,7 +67,7 @@ export class TripsController {
         return;
       }
 
-      const tripId = req.params.id as string;
+      const tripId = String(req.params.id) as string;
       const trip = await tripsService.findById(tripId, req.userId);
       ApiResponse.success(res, trip);
     } catch (err) {
@@ -85,7 +85,7 @@ export class TripsController {
         return;
       }
 
-      const tripId = req.params.id as string;
+      const tripId = String(req.params.id) as string;
       const trip = await tripsService.update(tripId, req.userId, req.body);
       ApiResponse.success(res, trip);
     } catch (err) {
@@ -103,7 +103,7 @@ export class TripsController {
         return;
       }
 
-      const tripId = req.params.id as string;
+      const tripId = String(req.params.id) as string;
       await tripsService.delete(tripId, req.userId);
       ApiResponse.noContent(res);
     } catch (err) {

@@ -30,6 +30,7 @@ import BudgetPage from './pages/BudgetPage';
 import CalendarPage from './pages/CalendarPage';
 import SharedTripPage from './pages/SharedTripPage';
 import ProfilePage from './pages/ProfilePage';
+import AdminPage from './pages/AdminPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 function AppContent() {
@@ -52,6 +53,7 @@ function AppContent() {
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/shared/:token" element={<SharedTripPage />} />
+            <Route path="/admin" element={<AdminPage />} />
 
             {/* Protected routes */}
             <Route

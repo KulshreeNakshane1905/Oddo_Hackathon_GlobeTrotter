@@ -7,7 +7,8 @@ import { ApiError } from '../utils/ApiError';
 import { logger } from '../utils/logger';
 import { cacheDelete } from '../config/redis';
 
-const prisma = new PrismaClient();
+import prisma from '../utils/prisma';
+
 
 // ── Select fields for stop response ──────────────────────────────────────────
 const stopInclude = {

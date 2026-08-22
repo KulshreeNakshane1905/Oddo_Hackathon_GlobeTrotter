@@ -18,7 +18,7 @@ export class StopsController {
         return;
       }
 
-      const tripId = req.params.tripId;
+      const tripId = String(req.params.tripId);
       const stop = await stopsService.addStop(req.userId, tripId, req.body);
       ApiResponse.created(res, stop);
     } catch (err) {
@@ -36,7 +36,7 @@ export class StopsController {
         return;
       }
 
-      const stopId = req.params.id;
+      const stopId = String(req.params.id);
       const stop = await stopsService.updateStop(req.userId, stopId, req.body);
       ApiResponse.success(res, stop);
     } catch (err) {
@@ -54,7 +54,7 @@ export class StopsController {
         return;
       }
 
-      const stopId = req.params.id;
+      const stopId = String(req.params.id);
       await stopsService.deleteStop(req.userId, stopId);
       ApiResponse.noContent(res);
     } catch (err) {
@@ -72,7 +72,7 @@ export class StopsController {
         return;
       }
 
-      const tripId = req.params.tripId;
+      const tripId = String(req.params.tripId);
       const { orderedIds } = req.body;
       const stops = await stopsService.reorderStops(req.userId, tripId, orderedIds);
       ApiResponse.success(res, stops);

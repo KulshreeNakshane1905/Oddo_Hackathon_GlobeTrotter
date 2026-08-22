@@ -18,7 +18,7 @@ export class BudgetController {
         return;
       }
 
-      const tripId = req.params.id as string;
+      const tripId = String(req.params.id) as string;
       const breakdown = await budgetService.computeBudget(tripId, req.userId);
       ApiResponse.success(res, breakdown);
     } catch (err) {
@@ -36,7 +36,7 @@ export class BudgetController {
         return;
       }
 
-      const tripId = req.params.id as string;
+      const tripId = String(req.params.id) as string;
       const events = await budgetService.getTimeline(tripId, req.userId);
       ApiResponse.success(res, events);
     } catch (err) {

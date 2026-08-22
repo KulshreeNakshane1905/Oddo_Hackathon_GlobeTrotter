@@ -7,7 +7,8 @@ import { getSupabaseAdmin } from '../config/supabase';
 import { ApiError } from '../utils/ApiError';
 import { logger } from '../utils/logger';
 
-const prisma = new PrismaClient();
+import prisma from '../utils/prisma';
+
 
 export interface UpdateProfileData {
   fullName?: string;

@@ -8,7 +8,8 @@ import { ApiError } from '../utils/ApiError';
 import { logger } from '../utils/logger';
 import { cacheGet, cacheSet } from '../config/redis';
 
-const prisma = new PrismaClient();
+import prisma from '../utils/prisma';
+
 const PUBLIC_TRIP_CACHE_TTL = 600; // 10 minutes
 
 export class SharingService {

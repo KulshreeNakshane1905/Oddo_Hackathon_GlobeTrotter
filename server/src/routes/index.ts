@@ -15,6 +15,7 @@ import {
 } from './activities.routes';
 import budgetRoutes from './budget.routes';
 import usersRoutes from './users.routes';
+import adminRoutes from './admin.routes';
 import { tripShareRouter, publicTripRouter } from './sharing.routes';
 
 const router = Router();
@@ -24,6 +25,7 @@ router.use('/auth', authRoutes);
 router.use('/users', usersRoutes);
 router.use('/trips', tripsRoutes);
 router.use('/cities', citiesRoutes);
+router.use('/admin', adminRoutes);
 
 // Phase 3 — Stops & Activities
 router.use('/trips/:tripId/stops', stopsRoutes);        // POST /, PATCH /reorder

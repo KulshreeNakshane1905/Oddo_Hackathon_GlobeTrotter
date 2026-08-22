@@ -6,7 +6,8 @@ import { PrismaClient, Prisma } from '@prisma/client';
 import { cacheGet, cacheSet } from '../config/redis';
 import { logger } from '../utils/logger';
 
-const prisma = new PrismaClient();
+import prisma from '../utils/prisma';
+
 
 // Cache TTLs (in seconds)
 const POPULAR_CITIES_TTL = 6 * 60 * 60; // 6 hours

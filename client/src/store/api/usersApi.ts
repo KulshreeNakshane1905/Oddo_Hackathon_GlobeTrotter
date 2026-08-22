@@ -1,6 +1,6 @@
 import { apiSlice } from './apiSlice';
-import { User } from '../../types/user.types';
-import { City } from '../../types/city.types';
+import type {  User  } from '../../types/user.types';
+import type { City } from '../../types/city.types';
 
 export interface SavedCity extends City {}
 

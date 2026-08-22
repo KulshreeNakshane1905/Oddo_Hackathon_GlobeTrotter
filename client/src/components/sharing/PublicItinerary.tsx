@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Typography, Paper, Chip, Divider, Avatar } from '@mui/material';
-import { Trip, Stop } from '../../types/trip.types';
+import type {  Trip, Stop  } from '../../types/trip.types';
 
 interface Props {
   trip: Trip;

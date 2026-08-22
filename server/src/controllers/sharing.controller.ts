@@ -13,7 +13,7 @@ export class SharingController {
    */
   async shareTrip(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const tripId = req.params.id;
+      const tripId = String(req.params.id);
       const result = await sharingService.generateShareToken(tripId, req.userId!);
       ApiResponse.success(res, result);
     } catch (err) {
@@ -26,7 +26,7 @@ export class SharingController {
    */
   async unshareTrip(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const tripId = req.params.id;
+      const tripId = String(req.params.id);
       await sharingService.revokeShareLink(tripId, req.userId!);
       ApiResponse.success(res, { message: 'Share link revoked' });
     } catch (err) {
@@ -39,7 +39,7 @@ export class SharingController {
    */
   async getPublicTrip(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const token = req.params.token;
+      const token = String(req.params.token);
       const trip = await sharingService.getPublicTrip(token);
       ApiResponse.success(res, trip);
     } catch (err) {
@@ -52,7 +52,7 @@ export class SharingController {
    */
   async copyTrip(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const token = req.params.token;
+      const token = String(req.params.token);
       const newTrip = await sharingService.copyTrip(token, req.userId!);
       ApiResponse.success(res, newTrip, 201);
     } catch (err) {

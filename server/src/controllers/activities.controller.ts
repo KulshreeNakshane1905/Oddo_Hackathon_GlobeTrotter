@@ -19,7 +19,7 @@ export class ActivitiesController {
         return;
       }
 
-      const stopId = req.params.stopId;
+      const stopId = String(req.params.stopId);
       const stopActivity = await activitiesService.addActivityToStop(req.userId, stopId, req.body);
       ApiResponse.created(res, stopActivity);
     } catch (err) {
@@ -37,7 +37,7 @@ export class ActivitiesController {
         return;
       }
 
-      const stopActivityId = req.params.id;
+      const stopActivityId = String(req.params.id);
       const stopActivity = await activitiesService.updateStopActivity(
         req.userId,
         stopActivityId,
@@ -59,7 +59,7 @@ export class ActivitiesController {
         return;
       }
 
-      const stopActivityId = req.params.id;
+      const stopActivityId = String(req.params.id);
       await activitiesService.removeStopActivity(req.userId, stopActivityId);
       ApiResponse.noContent(res);
     } catch (err) {

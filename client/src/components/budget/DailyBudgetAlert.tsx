@@ -14,9 +14,9 @@ import {
   useTheme,
   alpha,
 } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import WarningAmberIcon from '@mui/icons-material/WarningAmber';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import {  } from '@mui/icons-material';
+import {  } from '@mui/icons-material';
+import {  } from '@mui/icons-material';
 import type { DailyBudget } from '../../types/budget.types';
 import { formatCurrency } from '../../utils/formatters';
 

@@ -1,5 +1,5 @@
 import { apiSlice } from './apiSlice';
-import { Trip } from '../../types/trip.types';
+import type {  Trip  } from '../../types/trip.types';
 
 export interface ShareResponse {
   token: string;
