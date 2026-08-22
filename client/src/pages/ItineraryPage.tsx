@@ -27,6 +27,7 @@ import {
   CalendarMonth as CalendarIcon,
   LocationOn as LocationIcon,
   AttachMoney as MoneyIcon,
+  Share as ShareIcon,
 } from '@mui/icons-material';
 import { useDispatch } from 'react-redux';
 import { showSnackbar } from '../store/slices/uiSlice';
@@ -38,6 +39,7 @@ import TimelineView from '../components/itinerary/TimelineView';
 import CityGroupedView from '../components/itinerary/CityGroupedView';
 import CitySearchModal from '../components/itinerary/CitySearchModal';
 import ActivitySearchModal from '../components/itinerary/ActivitySearchModal';
+import { ShareDialog } from '../components/sharing/ShareDialog';
 import { formatDateRange, formatCurrency, calculateDays } from '../utils/formatters';
 import type { City } from '../types/city.types';
 import type { Activity } from '../types/activity.types';
@@ -51,6 +53,7 @@ export default function ItineraryPage() {
 
   const [viewMode, setViewMode] = useState<ViewMode>('builder');
   const [cityModalOpen, setCityModalOpen] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
   const [activityModal, setActivityModal] = useState<{
     open: boolean;
     stopId: string;
@@ -259,9 +262,19 @@ export default function ItineraryPage() {
           </Tooltip>
 
           <Box sx={{ flex: 1 }}>
-            <Typography variant="h4" fontWeight={800} gutterBottom>
-              {trip.tripName}
-            </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <Typography variant="h4" fontWeight={800} gutterBottom>
+                {trip.tripName}
+              </Typography>
+              <Button
+                variant="outlined"
+                color="primary"
+                startIcon={<ShareIcon />}
+                onClick={() => setShareModalOpen(true)}
+              >
+                Share
+              </Button>
+            </Box>
             {trip.description && (
               <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
                 {trip.description}
@@ -357,6 +370,12 @@ export default function ItineraryPage() {
         stopId={activityModal.stopId}
         cityId={activityModal.cityId}
         defaultDate={activityModal.defaultDate}
+      />
+
+      <ShareDialog
+        open={shareModalOpen}
+        onClose={() => setShareModalOpen(false)}
+        tripId={tripId!}
       />
     </Container>
   );

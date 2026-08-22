@@ -28,6 +28,8 @@ import CreateTripPage from './pages/CreateTripPage';
 import ItineraryPage from './pages/ItineraryPage';
 import BudgetPage from './pages/BudgetPage';
 import CalendarPage from './pages/CalendarPage';
+import SharedTripPage from './pages/SharedTripPage';
+import ProfilePage from './pages/ProfilePage';
 import NotFoundPage from './pages/NotFoundPage';
 
 function AppContent() {
@@ -49,6 +51,7 @@ function AppContent() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/shared/:token" element={<SharedTripPage />} />
 
             {/* Protected routes */}
             <Route
@@ -56,6 +59,14 @@ function AppContent() {
               element={
                 <ProtectedRoute>
                   <DashboardPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <ProfilePage />
                 </ProtectedRoute>
               }
             />

@@ -14,11 +14,14 @@ import {
   activitySearchRouter,
 } from './activities.routes';
 import budgetRoutes from './budget.routes';
+import usersRoutes from './users.routes';
+import { tripShareRouter, publicTripRouter } from './sharing.routes';
 
 const router = Router();
 
 // Mount route modules
 router.use('/auth', authRoutes);
+router.use('/users', usersRoutes);
 router.use('/trips', tripsRoutes);
 router.use('/cities', citiesRoutes);
 
@@ -31,6 +34,10 @@ router.use('/activities', activitySearchRouter);                // GET /search
 
 // Phase 4 — Budget & Timeline
 router.use('/trips/:id', budgetRoutes);                         // GET /budget, GET /timeline
+
+// Phase 5 — Sharing & Profile
+router.use('/trips/:id/share', tripShareRouter);                // POST /, DELETE /
+router.use('/public/trip', publicTripRouter);                   // GET /:token, POST /:token/copy
 
 // Health check
 router.get('/health', (_req, res) => {
