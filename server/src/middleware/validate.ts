@@ -22,7 +22,8 @@ export function validate(schema: ZodSchema, target: ValidationTarget = 'body') {
     } catch (err) {
       if (err instanceof ZodError) {
         const zodErr = err as any;
-        const details = zodErr.errors.map((e: any) => ({
+        const errorsList = zodErr.issues || zodErr.errors || [];
+        const details = errorsList.map((e: any) => ({
           field: e.path.join('.'),
           message: e.message,
           code: e.code,
