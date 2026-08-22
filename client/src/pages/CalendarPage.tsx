@@ -9,22 +9,84 @@ import {
   useTheme,
 } from '@mui/material';
 import { Search, FilterList, Sort, ArrowBack, ArrowForward } from '@mui/icons-material';
+import { useGetTripsQuery } from '../store/api/tripsApi';
 
 export default function CalendarPage() {
   const theme = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // Basic date state for month navigation
+  const [currentDate, setCurrentDate] = useState(new Date());
 
-  // 7 columns
+  const { data } = useGetTripsQuery({ limit: 50 });
+  const trips = data?.trips || [];
+
   const daysOfWeek = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
-  // A 5x7 grid to mock January 2024
-  // 1 starts on Monday (idx 1). 
-  // Let's just create an array of 31 days and pad the start.
-  const calendarDays = Array.from({ length: 35 }, (_, i) => {
-    const date = i - 0; // Starts from 1 at index 1
-    if (date < 1 || date > 31) return null;
-    return date;
-  });
+  const getDaysInMonth = (year: number, month: number) => {
+    return new Date(year, month + 1, 0).getDate();
+  };
+
+  const getFirstDayOfMonth = (year: number, month: number) => {
+    return new Date(year, month, 1).getDay();
+  };
+
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = currentDate.getMonth(); // 0-indexed
+
+  const daysInMonth = getDaysInMonth(currentYear, currentMonth);
+  const firstDay = getFirstDayOfMonth(currentYear, currentMonth);
+
+  // Generate calendar grid
+  const calendarDays = [];
+  
+  // Empty slots for previous month
+  for (let i = 0; i < firstDay; i++) {
+    calendarDays.push(null);
+  }
+  
+  // Actual days
+  for (let i = 1; i <= daysInMonth; i++) {
+    calendarDays.push(i);
+  }
+  
+  // Pad the rest to complete 5 or 6 weeks (35 or 42 cells)
+  const totalCells = Math.ceil(calendarDays.length / 7) * 7;
+  while (calendarDays.length < totalCells) {
+    calendarDays.push(null);
+  }
+
+  const handlePrevMonth = () => {
+    setCurrentDate(new Date(currentYear, currentMonth - 1, 1));
+  };
+
+  const handleNextMonth = () => {
+    setCurrentDate(new Date(currentYear, currentMonth + 1, 1));
+  };
+
+  const monthName = currentDate.toLocaleString('default', { month: 'long' });
+
+  // Helper to check if a specific day is in a trip
+  const getTripForDay = (day: number) => {
+    if (!day) return null;
+    
+    // Construct the actual date object for this cell
+    const cellDate = new Date(currentYear, currentMonth, day);
+    // Remove time for pure date comparison
+    cellDate.setHours(0, 0, 0, 0);
+
+    for (const trip of trips) {
+      const start = new Date(trip.startDate);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(trip.endDate);
+      end.setHours(23, 59, 59, 999);
+
+      if (cellDate >= start && cellDate <= end) {
+        return trip;
+      }
+    }
+    return null;
+  };
 
   return (
     <Box
@@ -46,7 +108,7 @@ export default function CalendarPage() {
         <TextField
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search bar ......"
+          placeholder="Search calendar events..."
           variant="outlined"
           size="small"
           sx={{ flexGrow: 1, bgcolor: theme.palette.background.paper }}
@@ -84,11 +146,11 @@ export default function CalendarPage() {
         mb: 4,
         px: { xs: 2, md: 8 }
       }}>
-        <IconButton><ArrowBack /></IconButton>
+        <IconButton onClick={handlePrevMonth}><ArrowBack /></IconButton>
         <Typography variant="h4" sx={{ fontWeight: 800 }}>
-          January 2024
+          {monthName} {currentYear}
         </Typography>
-        <IconButton><ArrowForward /></IconButton>
+        <IconButton onClick={handleNextMonth}><ArrowForward /></IconButton>
       </Box>
 
       {/* Calendar Grid Container */}
@@ -109,23 +171,25 @@ export default function CalendarPage() {
         {/* Days Grid */}
         <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
           {calendarDays.map((day, idx) => {
-            // Mock highlights
+            const trip = day ? getTripForDay(day) : null;
+            const isHighlighted = !!trip;
+            
+            // Generate a deterministic color based on trip ID length so it stays consistent
+            const colorIndex = trip ? trip.id.length % 3 : 0;
+            const bgColors = ['#e0e0e0', '#bdbdbd', '#cfcfcf'];
+            const bgColor = isHighlighted ? (theme.palette.mode === 'dark' ? '#333' : bgColors[colorIndex]) : 'transparent';
+            
+            // Only show the trip name on the FIRST day of the trip within this month, or if it's the 1st of the month and the trip is ongoing
             let highlightText = '';
-            let isHighlighted = false;
-            let bgColor = 'transparent';
-
-            if (day && day >= 5 && day <= 10) {
-              isHighlighted = true;
-              bgColor = '#e0e0e0';
-              if (day === 5) highlightText = 'PARIS TRIP';
-            } else if (day && day >= 15 && day <= 22) {
-              isHighlighted = true;
-              bgColor = '#bdbdbd';
-              if (day === 15) highlightText = 'NYC - GETAWAY';
-            } else if (day && day >= 25 && day <= 29) {
-              isHighlighted = true;
-              bgColor = '#e0e0e0';
-              if (day === 25) highlightText = 'JAPAN ADVENTURE';
+            if (trip && day) {
+               const cellDate = new Date(currentYear, currentMonth, day);
+               cellDate.setHours(0,0,0,0);
+               const startDate = new Date(trip.startDate);
+               startDate.setHours(0,0,0,0);
+               
+               if (cellDate.getTime() === startDate.getTime() || day === 1) {
+                 highlightText = trip.tripName.toUpperCase();
+               }
             }
 
             return (
@@ -138,7 +202,7 @@ export default function CalendarPage() {
                   p: 1,
                   display: 'flex',
                   flexDirection: 'column',
-                  bgcolor: isHighlighted ? bgColor : 'transparent',
+                  bgcolor: bgColor,
                   position: 'relative'
                 }}
               >
@@ -148,7 +212,17 @@ export default function CalendarPage() {
                   </Typography>
                 )}
                 {highlightText && (
-                  <Typography variant="body2" sx={{ fontWeight: 700, mt: 2 }}>
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      fontWeight: 700, 
+                      mt: 2, 
+                      whiteSpace: 'nowrap', 
+                      overflow: 'hidden', 
+                      textOverflow: 'ellipsis',
+                      px: 0.5
+                    }}
+                  >
                     {highlightText}
                   </Typography>
                 )}

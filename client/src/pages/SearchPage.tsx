@@ -6,24 +6,33 @@ import {
   InputAdornment,
   Button,
   Card,
+  CardMedia,
   CardContent,
   useTheme,
 } from '@mui/material';
 import { Search, FilterList, Sort } from '@mui/icons-material';
+import { useGetPopularCitiesQuery, useLazySearchCitiesQuery } from '../store/api/citiesApi';
 
 export default function SearchPage() {
   const theme = useTheme();
-  const [searchQuery, setSearchQuery] = useState('Paragliding');
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  const { data: popularCities, isLoading: popularLoading } = useGetPopularCitiesQuery(20);
+  const [triggerSearch, { data: searchResults, isLoading: searchLoading }] = useLazySearchCitiesQuery();
 
-  const results = [
-    { id: 1, title: 'Option and its details' },
-    { id: 2, title: 'Option and its details' },
-    { id: 3, title: 'Option and its details' },
-    { id: 4, title: 'Option and its details' },
-    { id: 5, title: 'Option and its details' },
-    { id: 6, title: 'Option and its details' },
-    { id: 7, title: 'Option and its details' },
-  ];
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      triggerSearch({ q: searchQuery.trim(), limit: 20 });
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') handleSearch();
+  };
+
+  // Show search results if we searched, otherwise show popular cities
+  const displayCities = searchQuery.trim() && searchResults ? searchResults : popularCities || [];
+  const isLoading = searchLoading || popularLoading;
 
   return (
     <Box
@@ -45,6 +54,8 @@ export default function SearchPage() {
         <TextField
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Search cities..."
           variant="outlined"
           size="small"
           sx={{ flexGrow: 1, bgcolor: theme.palette.background.paper }}
@@ -59,8 +70,8 @@ export default function SearchPage() {
           }}
         />
         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-          <Button variant="outlined" sx={{ bgcolor: theme.palette.background.paper, color: 'text.primary', borderColor: 'divider', borderRadius: 2 }}>
-            Group by
+          <Button variant="outlined" onClick={handleSearch} sx={{ bgcolor: theme.palette.background.paper, color: 'text.primary', borderColor: 'divider', borderRadius: 2 }}>
+            Search
           </Button>
           <Button variant="outlined" startIcon={<FilterList />} sx={{ bgcolor: theme.palette.background.paper, color: 'text.primary', borderColor: 'divider', borderRadius: 2 }}>
             Filter
@@ -73,30 +84,51 @@ export default function SearchPage() {
 
       {/* Results Header */}
       <Typography variant="h5" sx={{ fontWeight: 600, mb: 3 }}>
-        Results
+        {searchQuery.trim() && searchResults ? `Results for "${searchQuery}"` : 'Popular Cities'}
       </Typography>
 
       {/* Results List */}
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        {results.map((item) => (
-          <Card 
-            key={item.id} 
-            sx={{ 
-              borderRadius: 3, 
-              border: `1px solid ${theme.palette.divider}`,
-              boxShadow: 'none',
-              cursor: 'pointer',
-              '&:hover': { bgcolor: 'action.hover' }
-            }}
-          >
-            <CardContent sx={{ py: 3, '&:last-child': { pb: 3 } }}>
-              <Typography variant="body1" sx={{ textAlign: 'center', fontWeight: 500 }}>
-                {item.title}
-              </Typography>
-            </CardContent>
-          </Card>
-        ))}
-      </Box>
+      {isLoading ? (
+        <Typography color="text.secondary">Loading...</Typography>
+      ) : (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {displayCities.length > 0 ? displayCities.map((city) => (
+            <Card 
+              key={city.id} 
+              sx={{ 
+                display: 'flex',
+                borderRadius: 3, 
+                border: `1px solid ${theme.palette.divider}`,
+                boxShadow: 'none',
+                cursor: 'pointer',
+                overflow: 'hidden',
+                '&:hover': { bgcolor: 'action.hover' }
+              }}
+            >
+              <CardMedia
+                component="img"
+                sx={{ width: 120, height: 90, objectFit: 'cover' }}
+                image={city.imageUrl || 'https://images.unsplash.com/photo-1449844908441-8829872d2607?w=400'}
+                alt={city.name}
+              />
+              <CardContent sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box>
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                    {city.name}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {city.country} · Cost Index: {city.costIndex} · Popularity: {city.popularityScore}/100
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+          )) : (
+            <Typography color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
+              No cities found. Try a different search term.
+            </Typography>
+          )}
+        </Box>
+      )}
     </Box>
   );
 }

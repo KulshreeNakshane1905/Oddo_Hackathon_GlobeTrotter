@@ -9,34 +9,34 @@ import {
   BarChart, Bar,
   ResponsiveContainer
 } from 'recharts';
+import { useGetPlatformStatsQuery, useGetTopCitiesQuery } from '../store/api/adminApi';
 
-const pieData = [
-  { name: 'Group A', value: 400 },
-  { name: 'Group B', value: 300 },
-  { name: 'Group C', value: 300 },
-];
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28'];
-
-const lineData = [
-  { name: 'Jan', uv: 4000 },
-  { name: 'Feb', uv: 3000 },
-  { name: 'Mar', uv: 2000 },
-  { name: 'Apr', uv: 2780 },
-  { name: 'May', uv: 1890 },
-  { name: 'Jun', uv: 2390 },
-  { name: 'Jul', uv: 3490 },
-];
-
-const barData = [
-  { name: 'City A', uv: 4000 },
-  { name: 'City B', uv: 3000 },
-  { name: 'City C', uv: 2000 },
-];
 
 export default function AdminPage() {
   const theme = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [tabIndex, setTabIndex] = useState(0);
+
+  const { data: stats, isLoading: statsLoading } = useGetPlatformStatsQuery();
+  const { data: topCities, isLoading: citiesLoading } = useGetTopCitiesQuery(3);
+
+  // Transform real data for charts
+  const pieData = stats ? [
+    { name: 'Total Users', value: stats.overview.totalUsers },
+    { name: 'Total Trips', value: stats.overview.totalTrips },
+    { name: 'Total Activities', value: stats.overview.totalActivities },
+  ] : [];
+
+  const lineData = stats?.growth.users.map((count, i) => ({
+    name: `Wk ${i+1}`,
+    uv: parseInt(count, 10)
+  })) || [];
+
+  const barData = topCities ? topCities.map(c => ({
+    name: c.name,
+    uv: c.popularityScore
+  })) : [];
 
   return (
     <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, maxWidth: 1400, mx: 'auto' }}>
@@ -110,59 +110,69 @@ export default function AdminPage() {
           flexDirection: 'column',
           gap: 4
         }}>
-          {/* Top Row: Info + Pie Chart */}
-          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4, alignItems: 'center' }}>
-            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Box sx={{ height: 20, bgcolor: 'divider', borderRadius: 1, width: '80%' }} />
-              <Box sx={{ height: 20, bgcolor: 'divider', borderRadius: 1, width: '70%' }} />
-              <Box sx={{ height: 20, bgcolor: 'divider', borderRadius: 1, width: '60%' }} />
-              <Box sx={{ height: 20, bgcolor: 'divider', borderRadius: 1, width: '50%' }} />
-            </Box>
-            <Box sx={{ width: 200, height: 200 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={pieData} cx="50%" cy="50%" innerRadius={40} outerRadius={80} dataKey="value">
-                    {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
-            </Box>
-          </Box>
+          {statsLoading || citiesLoading ? (
+             <Typography>Loading statistics...</Typography>
+          ) : (
+            <>
+              {/* Top Row: Info + Pie Chart */}
+              <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4, alignItems: 'center' }}>
+                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 700 }}>Platform Overview</Typography>
+                  <Typography>Total Registered Users: <b>{stats?.overview.totalUsers}</b></Typography>
+                  <Typography>Total Trips Created: <b>{stats?.overview.totalTrips}</b></Typography>
+                  <Typography>Publicly Shared Trips: <b>{stats?.overview.publicTrips}</b></Typography>
+                </Box>
+                <Box sx={{ width: 200, height: 200 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={pieData} cx="50%" cy="50%" innerRadius={40} outerRadius={80} dataKey="value">
+                        {pieData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                </Box>
+              </Box>
 
-          {/* Middle Row: Line Chart */}
-          <Box sx={{ height: 250, width: '100%' }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={lineData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <RechartsTooltip />
-                <Line type="monotone" dataKey="uv" stroke="#ff7300" strokeWidth={3} dot={{ r: 6 }} />
-              </LineChart>
-            </ResponsiveContainer>
-          </Box>
+              {/* Middle Row: Line Chart */}
+              <Box sx={{ height: 250, width: '100%' }}>
+                <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>User Growth Trend</Typography>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={lineData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <RechartsTooltip />
+                    <Line type="monotone" dataKey="uv" stroke="#ff7300" strokeWidth={3} dot={{ r: 6 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </Box>
 
-          {/* Bottom Row: Bar Chart + Info */}
-          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4, alignItems: 'center' }}>
-            <Box sx={{ width: '50%', height: 200 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={barData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <RechartsTooltip />
-                  <Bar dataKey="uv" fill="#8884d8" />
-                </BarChart>
-              </ResponsiveContainer>
-            </Box>
-            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Box sx={{ height: 20, bgcolor: 'divider', borderRadius: 1, width: '100%' }} />
-              <Box sx={{ height: 20, bgcolor: 'divider', borderRadius: 1, width: '100%' }} />
-              <Box sx={{ height: 20, bgcolor: 'divider', borderRadius: 1, width: '100%' }} />
-            </Box>
-          </Box>
+              {/* Bottom Row: Bar Chart + Info */}
+              <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4, alignItems: 'center' }}>
+                <Box sx={{ width: '50%', height: 200 }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1 }}>Top 3 Popular Cities</Typography>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={barData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <RechartsTooltip />
+                      <Bar dataKey="uv" fill="#8884d8" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </Box>
+                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                   {topCities?.map(city => (
+                     <Typography key={city.id}>
+                       {city.name} - Score: {city.popularityScore}
+                     </Typography>
+                   ))}
+                </Box>
+              </Box>
+            </>
+          )}
 
         </Box>
 

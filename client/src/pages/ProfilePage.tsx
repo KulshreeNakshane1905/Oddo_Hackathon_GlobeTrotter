@@ -1,21 +1,24 @@
 import React, { useState } from 'react';
 import { Box, Container, Typography, Button, Avatar, Grid, Card, CardMedia, CardContent, CardActions, useTheme } from '@mui/material';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import type { RootState } from '../store/store';
 import { ProfileForm } from '../components/profile/ProfileForm';
+import { useGetTripsQuery } from '../store/api/tripsApi';
 
 export const ProfilePage: React.FC = () => {
   const theme = useTheme();
+  const navigate = useNavigate();
   const { user } = useSelector((state: RootState) => state.auth);
   
   const [isEditing, setIsEditing] = useState(false);
 
-  const trips = [
-    { id: '1', title: 'Summer in Europe', location: 'Europe', image: 'https://images.unsplash.com/photo-1499856871958-5b9627545d1a' },
-    { id: '2', title: 'Mountain Retreat', location: 'Colorado', image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b' },
-    { id: '3', title: 'Beach Getaway', location: 'Maldives', image: 'https://images.unsplash.com/photo-1514282401047-d79a71a590e8' },
-    { id: '4', title: 'City Explorer', location: 'Tokyo', image: 'https://images.unsplash.com/photo-1503899036084-c55cdd92da26' }
-  ];
+  const { data } = useGetTripsQuery({ limit: 50 });
+  const allTrips = data?.trips || [];
+  
+  const now = new Date();
+  const upcomingTrips = allTrips.filter(t => new Date(t.startDate) > now);
+  const pastTrips = allTrips.filter(t => new Date(t.endDate) < now);
 
   const renderTripCard = (trip: any) => (
     <Grid size={{ xs: 12, sm: 6, md: 3 }} key={trip.id}>
@@ -25,20 +28,24 @@ export const ProfilePage: React.FC = () => {
         flexDirection: 'column',
         borderRadius: 2,
         border: `1px solid ${theme.palette.divider}`,
-        boxShadow: theme.shadows[1]
-      }}>
+        boxShadow: theme.shadows[1],
+        cursor: 'pointer',
+        '&:hover': { transform: 'translateY(-4px)', transition: 'all 0.2s' }
+      }}
+      onClick={() => navigate(`/trips/${trip.id}`)}
+      >
         <CardMedia
           component="img"
           height="140"
-          image={trip.image}
-          alt={trip.title}
+          image={trip.coverPhotoUrl || 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=400'}
+          alt={trip.tripName}
         />
         <CardContent sx={{ flexGrow: 1 }}>
           <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-            {trip.title}
+            {trip.tripName}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            {trip.location}
+            {new Date(trip.startDate).toLocaleDateString()} - {new Date(trip.endDate).toLocaleDateString()}
           </Typography>
         </CardContent>
         <CardActions>
