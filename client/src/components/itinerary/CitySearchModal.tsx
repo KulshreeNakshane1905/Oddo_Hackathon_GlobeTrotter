@@ -103,7 +103,7 @@ export default function CitySearchModal({
                     <GlobeIcon />
                   </Avatar>
                   <Box sx={{ flex: 1 }}>
-                    <Typography variant="body2" fontWeight={600}>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
                       {option.name}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
@@ -138,24 +138,28 @@ export default function CitySearchModal({
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                inputProps={{
-                  min: tripStartDate.split('T')[0],
-                  max: tripEndDate.split('T')[0],
-                }}
                 fullWidth
-                InputLabelProps={{ shrink: true }}
+                slotProps={{ 
+                  htmlInput: {
+                    min: tripStartDate.split('T')[0],
+                    max: tripEndDate.split('T')[0],
+                  },
+                  inputLabel: { shrink: true } 
+                }}
               />
               <TextField
                 label="End Date"
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                inputProps={{
-                  min: startDate,
-                  max: tripEndDate.split('T')[0],
-                }}
                 fullWidth
-                InputLabelProps={{ shrink: true }}
+                slotProps={{ 
+                  htmlInput: {
+                    min: startDate,
+                    max: tripEndDate.split('T')[0],
+                  },
+                  inputLabel: { shrink: true } 
+                }}
               />
             </Stack>
           )}
@@ -179,7 +183,7 @@ export default function CitySearchModal({
                 <CityIcon />
               </Avatar>
               <Box>
-                <Typography variant="subtitle1" fontWeight={700}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
                   {selectedCity.name}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">

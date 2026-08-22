@@ -12,7 +12,7 @@ import {
   Filler
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import {  } from '../../store/api/adminApi';
+import type { AdminStats } from '../../store/api/adminApi';
 import { format, subMonths } from 'date-fns';
 
 ChartJS.register(

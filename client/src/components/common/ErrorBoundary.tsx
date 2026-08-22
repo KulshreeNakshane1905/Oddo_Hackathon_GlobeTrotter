@@ -2,7 +2,7 @@
 // ErrorBoundary — Catches React rendering errors
 // ============================================================================
 
-import { Component, ErrorInfo, ReactNode } from 'react';
+import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { Box, Typography, Button } from '@mui/material';
 // Icon removed to fix build
 

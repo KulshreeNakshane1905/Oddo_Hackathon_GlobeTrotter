@@ -11,7 +11,7 @@ export const SharedTripPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
         <CircularProgress />
       </Box>
     );
@@ -44,10 +44,10 @@ export const SharedTripPage: React.FC = () => {
         }}
       >
         <Container maxWidth="lg">
-          <Typography variant="h3" fontWeight="bold" gutterBottom>
+          <Typography variant="h3" sx={{ fontWeight: 'bold' }} gutterBottom>
             {trip.tripName}
           </Typography>
-          <Box display="flex" alignItems="center" gap={2}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Avatar src={trip.user?.profilePic || ''} sx={{ width: 40, height: 40 }} />
             <Typography variant="subtitle1">
               Curated by {trip.user?.fullName}
@@ -58,15 +58,15 @@ export const SharedTripPage: React.FC = () => {
 
       {/* Content */}
       <Container maxWidth="lg" sx={{ mt: 6 }}>
-        <Box display="flex" justifyContent="space-between" alignItems="flex-start" flexWrap="wrap" gap={4}>
-          <Box flex={1} minWidth={300}>
-            <Typography variant="h5" fontWeight="bold" gutterBottom>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 4 }}>
+          <Box sx={{ flex: 1, minWidth: 300 }}>
+            <Typography variant="h5" sx={{ fontWeight: 'bold' }} gutterBottom>
               Trip Itinerary
             </Typography>
-            <Typography variant="body1" color="text.secondary" paragraph>
+            <Typography variant="body1" color="text.secondary" component="p" sx={{ mb: 2 }}>
               {trip.description || 'No description provided for this trip.'}
             </Typography>
-            <Box mt={4}>
+            <Box sx={{ mt: 4 }}>
               <PublicItinerary trip={trip} />
             </Box>
           </Box>
@@ -86,13 +86,13 @@ export const SharedTripPage: React.FC = () => {
               textAlign: 'center',
             }}
           >
-            <Typography variant="h6" fontWeight="bold" gutterBottom>
+            <Typography variant="h6" sx={{ fontWeight: 'bold' }} gutterBottom>
               Like this trip?
             </Typography>
-            <Typography variant="body2" color="text.secondary" paragraph>
+            <Typography variant="body2" color="text.secondary" component="p" sx={{ mb: 2 }}>
               Copy this exact itinerary into your own account. You can then edit dates, add stops, and customize it to your liking!
             </Typography>
-            <Box mt={3}>
+            <Box sx={{ mt: 3 }}>
               <CopyTripButton token={token!} />
             </Box>
           </Box>

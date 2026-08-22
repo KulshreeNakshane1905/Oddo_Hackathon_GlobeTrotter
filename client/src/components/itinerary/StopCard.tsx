@@ -135,10 +135,10 @@ export default function StopCard({
 
         {/* City info */}
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography variant="subtitle1" fontWeight={700} noWrap>
+          <Typography variant="subtitle1" sx={{ fontWeight: 700 }} noWrap>
             {stop.city.name}
           </Typography>
-          <Stack direction="row" spacing={1} alignItems="center">
+          <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
             <Chip
               label={stop.city.country}
               size="small"
@@ -257,7 +257,7 @@ export default function StopCard({
 
           {/* Activities header */}
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-            <Typography variant="caption" fontWeight={600} color="text.secondary" textTransform="uppercase">
+            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase' }}>
               Activities ({stop.activities.length})
               {totalActivityCost > 0 && ` · ${formatCurrency(totalActivityCost, currency)}`}
             </Typography>

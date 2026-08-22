@@ -60,19 +60,27 @@ const components: ThemeOptions['components'] = {
           transform: 'translateY(-1px)',
         },
       },
-      containedPrimary: {
-        background: 'linear-gradient(135deg, #6C63FF 0%, #928CFF 100%)',
-        '&:hover': {
-          background: 'linear-gradient(135deg, #5B54E0 0%, #7B75FF 100%)',
-        },
-      },
-      containedSecondary: {
-        background: 'linear-gradient(135deg, #FF6B6B 0%, #FF9494 100%)',
-        '&:hover': {
-          background: 'linear-gradient(135deg, #E05555 0%, #FF7B7B 100%)',
-        },
-      },
     },
+    variants: [
+      {
+        props: { variant: 'contained', color: 'primary' },
+        style: {
+          background: 'linear-gradient(135deg, #6C63FF 0%, #928CFF 100%)',
+          '&:hover': {
+            background: 'linear-gradient(135deg, #5B54E0 0%, #7B75FF 100%)',
+          },
+        },
+      },
+      {
+        props: { variant: 'contained', color: 'secondary' },
+        style: {
+          background: 'linear-gradient(135deg, #FF6B6B 0%, #FF9494 100%)',
+          '&:hover': {
+            background: 'linear-gradient(135deg, #E05555 0%, #FF7B7B 100%)',
+          },
+        },
+      },
+    ],
   },
   MuiCard: {
     styleOverrides: {

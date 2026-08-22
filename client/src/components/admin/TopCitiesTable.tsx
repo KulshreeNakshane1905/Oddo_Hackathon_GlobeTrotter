@@ -3,7 +3,7 @@ import {
   Paper, Typography, Table, TableBody, TableCell, 
   TableContainer, TableHead, TableRow, LinearProgress, Box
 } from '@mui/material';
-import {  } from '../../store/api/adminApi';
+import type { CityStats } from '../../store/api/adminApi';
 
 interface TopCitiesTableProps {
   cities: CityStats[];

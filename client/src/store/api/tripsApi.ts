@@ -32,12 +32,13 @@ export const tripsApi = apiSlice.injectEndpoints({
       TripListParams | void
     >({
       query: (params) => {
+        const p = params as TripListParams | undefined;
         const searchParams = new URLSearchParams();
-        if (params?.page) searchParams.set('page', String(params.page));
-        if (params?.limit) searchParams.set('limit', String(params.limit));
-        if (params?.sort) searchParams.set('sort', params.sort);
-        if (params?.order) searchParams.set('order', params.order);
-        if (params?.upcoming) searchParams.set('upcoming', 'true');
+        if (p?.page) searchParams.set('page', String(p.page));
+        if (p?.limit) searchParams.set('limit', String(p.limit));
+        if (p?.sort) searchParams.set('sort', p.sort);
+        if (p?.order) searchParams.set('order', p.order);
+        if (p?.upcoming) searchParams.set('upcoming', 'true');
         return `/trips?${searchParams.toString()}`;
       },
       transformResponse: (response: TripsListResponse) => ({

@@ -110,17 +110,19 @@ export default function ActivitySearchModal({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             autoFocus
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon color="action" />
-                </InputAdornment>
-              ),
-              endAdornment: isFetching ? (
-                <InputAdornment position="end">
-                  <CircularProgress size={20} />
-                </InputAdornment>
-              ) : null,
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon color="action" />
+                  </InputAdornment>
+                ),
+                endAdornment: isFetching ? (
+                  <InputAdornment position="end">
+                    <CircularProgress size={20} />
+                  </InputAdornment>
+                ) : null,
+              }
             }}
           />
 
@@ -164,7 +166,7 @@ export default function ActivitySearchModal({
                 value={selectedTime}
                 onChange={(e) => setSelectedTime(e.target.value)}
                 size="small"
-                InputLabelProps={{ shrink: true }}
+                slotProps={{ inputLabel: { shrink: true } }}
                 sx={{ mt: 1, width: 150 }}
               />
             </Box>
@@ -173,7 +175,7 @@ export default function ActivitySearchModal({
           {/* Results grid */}
           <Box sx={{ maxHeight: 400, overflowY: 'auto', mt: 1 }}>
             {activities.length === 0 && debouncedQuery.length >= 1 && !isFetching && (
-              <Typography color="text.secondary" textAlign="center" sx={{ py: 4 }}>
+              <Typography color="text.secondary" align="center" sx={{ py: 4 }}>
                 No activities found. Try a different search term.
               </Typography>
             )}
@@ -203,7 +205,7 @@ export default function ActivitySearchModal({
                       <CardContent sx={{ flex: 1, py: 1.5, px: 2, '&:last-child': { pb: 1.5 } }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                           <Box sx={{ flex: 1, minWidth: 0 }}>
-                            <Typography variant="subtitle2" fontWeight={600} noWrap>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 600 }} noWrap>
                               {activity.name}
                             </Typography>
                             <Chip

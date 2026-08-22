@@ -132,8 +132,8 @@ export default function TimelineView({ stops, currency, startDate, endDate }: Ti
           <Box sx={{ flex: 1, pb: 3 }}>
             <Typography
               variant="subtitle2"
-              fontWeight={700}
               sx={{
+                fontWeight: 700,
                 color: entry.activities.length > 0 ? 'text.primary' : 'text.disabled',
                 mb: 1,
               }}
@@ -164,10 +164,10 @@ export default function TimelineView({ stops, currency, startDate, endDate }: Ti
                       <CardContent sx={{ py: 1.5, px: 2, '&:last-child': { pb: 1.5 } }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                           <Box>
-                            <Typography variant="subtitle2" fontWeight={600}>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
                               {activity.name}
                             </Typography>
-                            <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.25 }}>
+                            <Stack direction="row" spacing={1} sx={{ mt: 0.25, alignItems: 'center' }}>
                               <Chip
                                 label={activity.type}
                                 size="small"
@@ -187,8 +187,8 @@ export default function TimelineView({ stops, currency, startDate, endDate }: Ti
                               </Box>
                             </Stack>
                           </Box>
-                          <Stack alignItems="flex-end">
-                            <Typography variant="caption" fontWeight={600}>
+                          <Stack sx={{ alignItems: 'flex-end' }}>
+                            <Typography variant="caption" sx={{ fontWeight: 600 }}>
                               {formatTime(stopActivity.scheduledTime)}
                             </Typography>
                             <Typography variant="caption" color="text.secondary">

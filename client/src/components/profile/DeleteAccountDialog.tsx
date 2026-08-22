@@ -17,12 +17,12 @@ interface Props {
 
 export const DeleteAccountDialog: React.FC<Props> = ({ open, onClose }) => {
   const [deleteMe, { isLoading }] = useDeleteMeMutation();
-  const { signOut } = useAuth();
+  const { logout } = useAuth();
 
   const handleDelete = async () => {
     try {
       await deleteMe().unwrap();
-      await signOut(); // Log them out immediately
+      await logout(); // Log them out immediately
     } catch (err) {
       console.error('Failed to delete account', err);
       alert('Failed to delete account. Please try again.');

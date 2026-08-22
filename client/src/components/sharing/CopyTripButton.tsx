@@ -10,13 +10,13 @@ interface Props {
 }
 
 export const CopyTripButton: React.FC<Props> = ({ token }) => {
-  const { session } = useAuth();
+  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [copyTrip, { isLoading }] = useCopyTripMutation();
   const [error, setError] = useState('');
 
   const handleCopy = async () => {
-    if (!session) {
+    if (!isAuthenticated) {
       // Redirect to login, but ideally pass a return_url in state
       navigate('/login', { state: { returnUrl: `/shared/${token}` } });
       return;
@@ -53,7 +53,7 @@ export const CopyTripButton: React.FC<Props> = ({ token }) => {
         transition: 'all 0.2s',
       }}
     >
-      {isLoading ? 'Copying to your account...' : session ? 'Copy to My Trips' : 'Login to Copy Trip'}
+      {isLoading ? 'Copying to your account...' : isAuthenticated ? 'Copy to My Trips' : 'Login to Copy Trip'}
     </Button>
   );
 };

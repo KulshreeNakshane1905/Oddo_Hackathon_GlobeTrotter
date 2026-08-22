@@ -3,6 +3,7 @@
 // ============================================================================
 
 import { PrismaClient, ActivityType } from '@prisma/client';
+import process from 'process';
 import citiesData from '../data/cities.json';
 import activitiesData from '../data/activities.json';
 

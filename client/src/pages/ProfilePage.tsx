@@ -60,7 +60,7 @@ export const ProfilePage: React.FC = () => {
           <Typography variant="h6" color="error" gutterBottom>
             Delete Account
           </Typography>
-          <Typography variant="body1" paragraph>
+          <Typography variant="body1" sx={{ mb: 2 }}>
             Once you delete your account, there is no going back. Please be certain.
           </Typography>
           <Button variant="outlined" color="error" onClick={() => setIsDeleteDialogOpen(true)}>

@@ -58,7 +58,7 @@ const formSchema = z
     }
   );
 
-type FormValues = z.infer<typeof formSchema>;
+type FormValues = z.input<typeof formSchema>;
 
 const steps = ['Trip Details', 'Dates', 'Budget', 'Cover Photo'];
 

@@ -4,7 +4,7 @@
 
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { API_BASE_URL } from '../../utils/constants';
-import type { RootState } from '../store';
+import type { RootState } from '../store.ts';
 
 export const apiSlice = createApi({
   reducerPath: 'api',
@@ -19,6 +19,6 @@ export const apiSlice = createApi({
       return headers;
     },
   }),
-  tagTypes: ['Trip', 'Trips', 'Stop', 'Activity', 'Budget', 'Cities', 'User', 'Admin'],
+  tagTypes: ['Trip', 'Trips', 'Stop', 'Activity', 'Budget', 'Cities', 'User', 'Admin', 'SavedCities'],
   endpoints: () => ({}),
 });

@@ -4,7 +4,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import FlightTakeoffIcon from '@mui/icons-material/FlightTakeoff';
 import PublicIcon from '@mui/icons-material/Public';
 import LocalActivityIcon from '@mui/icons-material/LocalActivity';
-import {  } from '../../store/api/adminApi';
+import type { AdminStats } from '../../store/api/adminApi';
 
 interface PlatformStatsProps {
   stats: AdminStats;
@@ -37,7 +37,7 @@ const PlatformStats: React.FC<PlatformStatsProps> = ({ stats }) => {
   return (
     <Grid container spacing={3}>
       {cards.map((card, index) => (
-        <Grid item xs={12} sm={6} md={3} key={index}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }} key={index}>
           <Paper
             elevation={2}
             sx={{
@@ -52,7 +52,7 @@ const PlatformStats: React.FC<PlatformStatsProps> = ({ stats }) => {
               <Typography variant="body2" color="text.secondary" gutterBottom>
                 {card.title}
               </Typography>
-              <Typography variant="h4" fontWeight="bold">
+              <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                 {card.value.toLocaleString()}
               </Typography>
             </Box>

@@ -79,10 +79,10 @@ export default function CityGroupedView({ stops, currency }: CityGroupedViewProp
               </Avatar>
 
               <Box sx={{ flex: 1 }}>
-                <Typography variant="h6" fontWeight={700}>
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>
                   {stop.city.name}
                 </Typography>
-                <Stack direction="row" spacing={1} alignItems="center">
+                <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
                   <Chip
                     label={stop.city.country}
                     size="small"
@@ -99,7 +99,7 @@ export default function CityGroupedView({ stops, currency }: CityGroupedViewProp
               </Box>
 
               <Box sx={{ textAlign: 'right' }}>
-                <Typography variant="subtitle2" fontWeight={700}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
                   {formatCurrency(totalStopCost, currency)}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
@@ -114,7 +114,7 @@ export default function CityGroupedView({ stops, currency }: CityGroupedViewProp
                 <Typography
                   variant="body2"
                   color="text.secondary"
-                  textAlign="center"
+                  align="center"
                   sx={{ py: 2, fontStyle: 'italic' }}
                 >
                   No activities planned for this stop
@@ -146,10 +146,10 @@ export default function CityGroupedView({ stops, currency }: CityGroupedViewProp
                             }}
                           />
                           <Box>
-                            <Typography variant="body2" fontWeight={600}>
+                            <Typography variant="body2" sx={{ fontWeight: 600 }}>
                               {activity.name}
                             </Typography>
-                            <Stack direction="row" spacing={1} alignItems="center">
+                            <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
                               <Chip
                                 label={activity.type}
                                 size="small"
@@ -171,7 +171,7 @@ export default function CityGroupedView({ stops, currency }: CityGroupedViewProp
                           </Box>
                         </Box>
 
-                        <Typography variant="body2" fontWeight={600} color="text.secondary">
+                        <Typography variant="body2" sx={{ fontWeight: 600 }} color="text.secondary">
                           {formatCurrency(Number(sa.cost), currency)}
                         </Typography>
                       </Box>

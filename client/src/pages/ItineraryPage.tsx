@@ -263,7 +263,7 @@ export default function ItineraryPage() {
 
           <Box sx={{ flex: 1 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <Typography variant="h4" fontWeight={800} gutterBottom>
+              <Typography variant="h4" sx={{ fontWeight: 800 }} gutterBottom>
                 {trip.tripName}
               </Typography>
               <Button
@@ -281,7 +281,7 @@ export default function ItineraryPage() {
               </Typography>
             )}
 
-            <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap>
+            <Stack direction="row" spacing={1.5} sx={{ flexWrap: 'wrap' }} useFlexGap>
               <Chip
                 icon={<CalendarIcon />}
                 label={`${formatDateRange(trip.startDate, trip.endDate)} · ${totalDays} days`}

@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import { ContentCopy, QrCode2, LinkOff } from '@mui/icons-material';
 import { useShareTripMutation, useUnshareTripMutation } from '../../store/api/sharingApi';
-import { useGetTripsQuery } from '../../store/api/tripsApi';
+import { useGetTripByIdQuery } from '../../store/api/tripsApi';
 
 interface Props {
   open: boolean;
@@ -23,7 +23,7 @@ interface Props {
 }
 
 export const ShareDialog: React.FC<Props> = ({ open, onClose, tripId }) => {
-  const { data: trip, isLoading: isFetchingTrip } = useGetTripQuery(tripId, { skip: !open });
+  const { data: trip, isLoading: isFetchingTrip } = useGetTripByIdQuery(tripId, { skip: !open });
   const [shareTrip, { isLoading: isSharing }] = useShareTripMutation();
   const [unshareTrip, { isLoading: isUnsharing }] = useUnshareTripMutation();
   
@@ -67,7 +67,7 @@ export const ShareDialog: React.FC<Props> = ({ open, onClose, tripId }) => {
       <DialogTitle>Share Trip</DialogTitle>
       <DialogContent>
         {isFetchingTrip ? (
-          <Box display="flex" justifyContent="center" p={3}>
+          <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
             <CircularProgress />
           </Box>
         ) : shareLink ? (
@@ -75,12 +75,12 @@ export const ShareDialog: React.FC<Props> = ({ open, onClose, tripId }) => {
             <Typography variant="body1" gutterBottom>
               Anyone with this link can view your itinerary (read-only) and copy it to their own account.
             </Typography>
-            <Box display="flex" alignItems="center" mt={2} mb={2}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mt: 2, mb: 2 }}>
               <TextField
                 fullWidth
                 variant="outlined"
                 value={shareLink}
-                InputProps={{ readOnly: true }}
+                slotProps={{ htmlInput: { readOnly: true } }}
               />
               <Tooltip title={copied ? 'Copied!' : 'Copy to clipboard'}>
                 <IconButton onClick={handleCopy} color="primary" sx={{ ml: 1 }}>
@@ -99,8 +99,8 @@ export const ShareDialog: React.FC<Props> = ({ open, onClose, tripId }) => {
             </Button>
           </Box>
         ) : (
-          <Box textAlign="center" py={3}>
-            <Typography variant="body1" color="text.secondary" paragraph>
+          <Box sx={{ textAlign: 'center', py: 3 }}>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
               This trip is currently private. Generate a share link to allow others to view it.
             </Typography>
             <Button

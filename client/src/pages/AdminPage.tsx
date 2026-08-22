@@ -35,7 +35,7 @@ const AdminPage: React.FC = () => {
 
   return (
     <Container maxWidth="xl" sx={{ py: 4, minHeight: '100vh' }}>
-      <Typography variant="h4" fontWeight="bold" gutterBottom>
+      <Typography variant="h4" sx={{ fontWeight: 'bold' }} gutterBottom>
         Admin Dashboard
       </Typography>
       
@@ -50,13 +50,13 @@ const AdminPage: React.FC = () => {
 
       {tabIndex === 0 && stats && (
         <Grid container spacing={4}>
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <PlatformStats stats={stats} />
           </Grid>
-          <Grid item xs={12} lg={8}>
+          <Grid size={{ xs: 12, lg: 8 }}>
             <UserGrowthChart stats={stats} />
           </Grid>
-          <Grid item xs={12} lg={4}>
+          <Grid size={{ xs: 12, lg: 4 }}>
             {cities && <TopCitiesTable cities={cities} />}
           </Grid>
         </Grid>

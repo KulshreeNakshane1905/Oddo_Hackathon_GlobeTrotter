@@ -1,0 +1,72 @@
+Phase 2 
+All tasks completed
+
+Phase 3 — Task Tracker
+
+Backend
+ stops.validators.ts — Zod schemas for stop CRUD
+ activities.validators.ts — Zod schemas for activity CRUD + search
+ stops.service.ts — Stop CRUD + reorder logic
+ activities.service.ts — StopActivity CRUD + activity search
+ stops.controller.ts — HTTP handlers for stops
+ activities.controller.ts — HTTP handlers for activities
+ stops.routes.ts — Route definitions for stops
+ activities.routes.ts — Route definitions for activities
+ routes/index.ts — Register new routes
+
+Frontend
+ activity.types.ts — Activity type definitions
+ stop.types.ts — Stop input type definitions
+ stopsApi.ts — RTK Query endpoints for stops
+ activitiesApi.ts — RTK Query endpoints for activities
+ useDebounce.ts — Debounce hook
+ CitySearchModal.tsx — City search dialog
+ ActivitySearchModal.tsx — Activity search dialog
+ ActivityCard.tsx — Activity card within a stop
+ StopCard.tsx — Draggable stop card
+ StopList.tsx — Drag-and-drop stop list
+ TimelineView.tsx — Day-wise timeline view
+ CityGroupedView.tsx — City-grouped view
+ ItineraryPage.tsx — Main itinerary page
+ App.tsx — Add itinerary route
+
+Phase 4 
+All tasks completed
+
+# Phase 5: Sharing & Profile — Task Tracker
+
+- [x] *Backend — Users API*
+  - [x] server/src/services/users.service.ts
+  - [x] server/src/controllers/users.controller.ts
+  - [x] server/src/routes/users.routes.ts
+
+- [x] *Backend — Sharing API*
+  - [x] server/src/services/sharing.service.ts
+  - [x] server/src/controllers/sharing.controller.ts
+  - [x] server/src/routes/sharing.routes.ts
+
+- [x] *Backend — Route Integration*
+  - [x] server/src/routes/index.ts (mount users & sharing)
+
+- [x] *Frontend — API Slices*
+  - [x] client/src/store/api/usersApi.ts
+  - [x] client/src/store/api/sharingApi.ts
+
+- [x] *Frontend — Profile Components*
+  - [x] client/src/components/profile/ProfileForm.tsx
+  - [x] client/src/components/profile/SavedCities.tsx
+  - [x] client/src/components/profile/DeleteAccountDialog.tsx
+  - [x] client/src/pages/ProfilePage.tsx
+
+- [x] *Frontend — Sharing Components*
+  - [x] client/src/components/sharing/ShareDialog.tsx
+  - [x] client/src/components/sharing/CopyTripButton.tsx
+  - [x] client/src/components/sharing/PublicItinerary.tsx
+  - [x] client/src/pages/SharedTripPage.tsx
+
+- [x] *Frontend — Route Integration*
+  - [x] client/src/App.tsx (add new routes)
+
+- [x] *Verification*
+  - [x] Backend implementation verified
+  - [x] Frontend compilation & types checked (0 errors)

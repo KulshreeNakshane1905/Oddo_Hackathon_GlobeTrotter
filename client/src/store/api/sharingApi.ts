@@ -1,5 +1,5 @@
 import { apiSlice } from './apiSlice';
-import type {  Trip  } from '../../types/trip.types';
+import type {  Trip, TripWithStops  } from '../../types/trip.types';
 
 export interface ShareResponse {
   token: string;
@@ -21,7 +21,7 @@ export const sharingApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: (result, error, arg) => [{ type: 'Trip', id: arg }],
     }),
-    getPublicTrip: builder.query<Trip, string>({
+    getPublicTrip: builder.query<TripWithStops & { user?: { fullName: string; profilePic: string | null } }, string>({
       query: (token) => `/public/trip/${token}`,
     }),
     copyTrip: builder.mutation<Trip, string>({

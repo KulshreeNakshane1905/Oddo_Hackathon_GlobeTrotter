@@ -16,7 +16,7 @@ export const SavedCities: React.FC = () => {
   return (
     <Grid container spacing={3}>
       {cities.map((city) => (
-        <Grid item xs={12} sm={6} md={4} key={city.id}>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }} key={city.id}>
           <Card sx={{ position: 'relative' }}>
             <CardMedia
               component="img"
