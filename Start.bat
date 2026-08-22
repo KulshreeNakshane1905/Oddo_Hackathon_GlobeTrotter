@@ -5,11 +5,11 @@ echo ========================================================
 echo.
 
 echo Starting Local Database (PostgreSQL)...
-call .\start_postgres.bat
+call "%~dp0start_postgres.bat"
 echo.
 
-start "GlobalTrotters Client" cmd /k "cd client && npm run dev"
-start "GlobalTrotters Server" cmd /k "cd server && npm run dev"
+start "GlobalTrotters Client" cmd /k "cd /d "%~dp0client" && npm run dev"
+start "GlobalTrotters Server" cmd /k "cd /d "%~dp0server" && npm run dev"
 
 echo Servers are booting up in separate terminal windows!
 echo Client will run on: http://localhost:5173
