@@ -23,7 +23,8 @@ import {
   type ToolbarProps,
   type EventProps,
 } from 'react-big-calendar';
-import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
+import withDragAndDropModule from 'react-big-calendar/lib/addons/dragAndDrop';
+const withDragAndDrop = (withDragAndDropModule as any).default || withDragAndDropModule;
 import { format, parse, startOfWeek, getDay } from 'date-fns';
 import { enUS } from 'date-fns/locale/en-US';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
