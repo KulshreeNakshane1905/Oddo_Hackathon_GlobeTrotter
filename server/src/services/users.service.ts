@@ -43,7 +43,7 @@ export class UsersService {
     // Sync full name back to Supabase Auth metadata
     if (data.fullName) {
       const supabase = getSupabaseAdmin();
-      await supabase.auth.admin.updateUserById(userId, {
+      await (supabase.auth as any).admin.updateUserById(userId, {
         user_metadata: { full_name: data.fullName },
       });
     }
@@ -66,10 +66,10 @@ export class UsersService {
 
     // 2. Delete from Supabase Auth
     const supabase = getSupabaseAdmin();
-    const { error } = await supabase.auth.admin.deleteUser(userId);
+    const { error: authError } = await (supabase.auth as any).admin.deleteUser(userId);
 
-    if (error) {
-      logger.error(`Error deleting user ${userId} from Supabase:`, error);
+    if (authError) {
+      logger.error(`Error deleting user ${userId} from Supabase:`, authError);
       // We already deleted from our DB, so this is a partial failure, but we shouldn't throw 
       // if the primary data is gone. Supabase will reject future logins anyway if DB is out of sync.
     }

@@ -1,9 +1,9 @@
 // ============================================================================
-// Auth Middleware — Verifies Local JWT from Authorization header
+// Auth Middleware — Verifies Supabase JWT from Authorization header
 // ============================================================================
 
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import { getSupabaseAdmin } from '../config/supabase';
 import { ApiError } from '../utils/ApiError';
 import { ApiResponse } from '../utils/ApiResponse';
 import { logger } from '../utils/logger';
@@ -15,10 +15,8 @@ export interface AuthenticatedRequest extends Request {
   isAdmin?: boolean;
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key-for-dev-only-do-not-use-in-prod';
-
 /**
- * Middleware that verifies the JWT and attaches user info to the request.
+ * Middleware that verifies the Supabase JWT and attaches user info to the request.
  * Expects: Authorization: Bearer <jwt>
  */
 export async function authMiddleware(
@@ -41,22 +39,26 @@ export async function authMiddleware(
       return;
     }
 
-    // Verify local JWT
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    // Verify token using Supabase Admin client
+    const supabase = getSupabaseAdmin();
+    const { data, error } = await (supabase.auth as any).getUser(token);
 
-    if (!decoded || !decoded.id) {
+    if (error || !data.user) {
+      logger.warn(`Auth failed: ${error?.message || 'No user found'}`);
       ApiResponse.error(res, 401, 'Invalid or expired token', 'UNAUTHORIZED');
       return;
     }
 
     // Attach user info to request
-    req.userId = decoded.id;
-    req.userEmail = decoded.email;
-    req.isAdmin = decoded.role === 'admin';
+    req.userId = data.user.id;
+    req.userEmail = data.user.email;
+
+    // Check admin status from user metadata or database
+    req.isAdmin = data.user.user_metadata?.is_admin === true;
 
     next();
   } catch (err) {
-    logger.warn('Auth middleware error: ' + (err as Error).message);
+    logger.error('Auth middleware error:', err);
     ApiResponse.error(res, 401, 'Authentication failed', 'UNAUTHORIZED');
   }
 }
@@ -75,11 +77,12 @@ export async function optionalAuthMiddleware(
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.split(' ')[1];
       if (token) {
-        const decoded = jwt.verify(token, JWT_SECRET) as any;
-        if (decoded && decoded.id) {
-          req.userId = decoded.id;
-          req.userEmail = decoded.email;
-          req.isAdmin = decoded.role === 'admin';
+        const supabase = getSupabaseAdmin();
+        const { data } = await (supabase.auth as any).getUser(token);
+        if (data.user) {
+          req.userId = data.user.id;
+          req.userEmail = data.user.email;
+          req.isAdmin = data.user.user_metadata?.is_admin === true;
         }
       }
     }
