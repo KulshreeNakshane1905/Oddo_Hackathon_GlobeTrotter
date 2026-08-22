@@ -19,16 +19,17 @@ import {
   useTheme,
   useMediaQuery,
 } from '@mui/material';
-import {
-  Menu as MenuIcon,
-  DarkMode,
-  LightMode,
-  Person,
-  Logout,
-  Dashboard,
-  Map,
-  AdminPanelSettings,
-} from '@mui/icons-material';
+import MenuIcon from '@mui/icons-material/Menu';
+import DarkMode from '@mui/icons-material/DarkMode';
+import LightMode from '@mui/icons-material/LightMode';
+import Person from '@mui/icons-material/Person';
+import Logout from '@mui/icons-material/Logout';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import MapIcon from '@mui/icons-material/Map';
+import AdminPanelSettings from '@mui/icons-material/AdminPanelSettings';
+import SearchIcon from '@mui/icons-material/Search';
+import ForumIcon from '@mui/icons-material/Forum';
+import CalendarIcon from '@mui/icons-material/CalendarMonth';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState, AppDispatch } from '../../store/store';
 import { toggleTheme, toggleSidebar } from '../../store/slices/uiSlice';
@@ -120,7 +121,7 @@ export default function Navbar() {
         {isAuthenticated && !isMobile && (
           <Box sx={{ display: 'flex', gap: 1 }}>
             <Button
-              startIcon={<Dashboard />}
+              startIcon={<DashboardIcon />}
               onClick={() => navigate('/dashboard')}
               sx={{
                 color: location.pathname === '/dashboard' ? 'primary.main' : 'text.secondary',
@@ -131,15 +132,48 @@ export default function Navbar() {
               Dashboard
             </Button>
             <Button
-              startIcon={<Map />}
+              startIcon={<MapIcon />}
               onClick={() => navigate('/trips')}
               sx={{
-                color: location.pathname === '/trips' ? 'primary.main' : 'text.secondary',
-                fontWeight: location.pathname === '/trips' ? 600 : 500,
+                color: location.pathname.startsWith('/trips') ? 'primary.main' : 'text.secondary',
+                fontWeight: location.pathname.startsWith('/trips') ? 600 : 500,
                 '&:hover': { color: 'primary.main', bgcolor: 'rgba(108,99,255,0.08)' },
               }}
             >
               My Trips
+            </Button>
+            <Button
+              startIcon={<SearchIcon />}
+              onClick={() => navigate('/search')}
+              sx={{
+                color: location.pathname === '/search' ? 'primary.main' : 'text.secondary',
+                fontWeight: location.pathname === '/search' ? 600 : 500,
+                '&:hover': { color: 'primary.main', bgcolor: 'rgba(108,99,255,0.08)' },
+              }}
+            >
+              Search
+            </Button>
+            <Button
+              startIcon={<ForumIcon />}
+              onClick={() => navigate('/community')}
+              sx={{
+                color: location.pathname === '/community' ? 'primary.main' : 'text.secondary',
+                fontWeight: location.pathname === '/community' ? 600 : 500,
+                '&:hover': { color: 'primary.main', bgcolor: 'rgba(108,99,255,0.08)' },
+              }}
+            >
+              Community
+            </Button>
+            <Button
+              startIcon={<CalendarIcon />}
+              onClick={() => navigate('/calendar')}
+              sx={{
+                color: location.pathname === '/calendar' ? 'primary.main' : 'text.secondary',
+                fontWeight: location.pathname === '/calendar' ? 600 : 500,
+                '&:hover': { color: 'primary.main', bgcolor: 'rgba(108,99,255,0.08)' },
+              }}
+            >
+              Calendar
             </Button>
           </Box>
         )}

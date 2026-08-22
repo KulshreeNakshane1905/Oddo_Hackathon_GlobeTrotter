@@ -130,6 +130,14 @@ function AppContent() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/calendar"
+              element={
+                <ProtectedRoute>
+                  <CalendarPage />
+                </ProtectedRoute>
+              }
+            />
 
             {/* Redirects */}
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
