@@ -3,11 +3,20 @@
 // ============================================================================
 
 import { PrismaClient, ActivityType } from '@prisma/client';
+import { Pool } from 'pg';
+import { PrismaPg } from '@prisma/adapter-pg';
 import process from 'process';
+import * as dotenv from 'dotenv';
+import path from 'path';
+
 import citiesData from '../data/cities.json';
 import activitiesData from '../data/activities.json';
 
-const prisma = new PrismaClient();
+dotenv.config({ path: path.join(__dirname, '..', '.env') });
+
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 interface CityData {
   name: string;
