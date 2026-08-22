@@ -1,0 +1,29 @@
+# ============================================================================
+# Docker Compose — Local Development Environment
+# ============================================================================
+# Provides local Redis server for development.
+# Supabase is used as a managed service (no local Supabase container).
+# ============================================================================
+
+version: '3.8'
+
+services:
+  # ── Redis ────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: globaltrotters-redis
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  redis_data:
+    driver: local

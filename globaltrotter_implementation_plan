@@ -1,0 +1,885 @@
+# GlobalTrotters — Complete Implementation Plan
+
+## 1. Executive Summary
+
+**GlobalTrotters** is an enterprise-grade, multi-city travel planning platform that empowers users to create, customize, share, and budget complex itineraries. This plan covers the full architecture, database design, API surface, frontend screens, deployment strategy, and a phased delivery roadmap.
+
+> [!IMPORTANT]
+> This is a production-ready plan. Each phase is self-contained and testable. Approval is required before execution begins.
+
+---
+
+## 2. System Architecture
+
+```mermaid
+graph TB
+    subgraph Client["Frontend (Vercel)"]
+        React["React + TypeScript"]
+        Redux["Redux Toolkit + RTK Query"]
+        MUI["Material-UI Components"]
+        Charts["Chart.js + react-big-calendar"]
+        DnD["react-dnd (Drag & Drop)"]
+    end
+
+    subgraph Server["Backend (Railway)"]
+        Express["Node.js + Express"]
+        Middleware["Auth Middleware (JWT verify)"]
+        Routes["REST API Routes"]
+        Services["Business Logic Services"]
+        Validators["Input Validation (Joi/Zod)"]
+    end
+
+    subgraph Data["Data Layer"]
+        Supabase["Supabase (PostgreSQL)"]
+        Redis["Redis (Upstash/Railway)"]
+        Storage["Supabase Storage / Cloudinary"]
+    end
+
+    React --> Express
+    Express --> Supabase
+    Express --> Redis
+    Express --> Storage
+    React -.->|Auth| Supabase
+```
+
+### Architecture Decisions & Rationale
+
+| Decision | Rationale |
+|----------|-----------|
+| **React + TypeScript** | Type safety, superior DX, massive ecosystem, component reusability |
+| **Redux Toolkit + RTK Query** | Standardized state management with built-in caching, optimistic updates, and auto-refetch |
+| **Node.js + Express** | Lightweight, non-blocking I/O, same language as frontend (TypeScript end-to-end) |
+| **Supabase (PostgreSQL)** | Managed Postgres with built-in auth, RLS, real-time subscriptions, and auto-generated REST — eliminates boilerplate |
+| **Redis** | Sub-millisecond reads for city/activity search caching, rate-limiting, and session store |
+| **Vercel** | Zero-config React deployment, automatic SSL, edge CDN, Git-based CI/CD |
+| **Railway** | Simple Node.js hosting with env vars, auto-scaling, Redis plugin, generous free tier |
+| **Material-UI** | Comprehensive, accessible, well-documented component library with theming support |
+
+---
+
+## 3. Project Directory Structure
+
+### 3.1 Monorepo Layout
+
+```
+E:\Global_trotter\
+├── client/                          # React Frontend
+│   ├── public/
+│   │   ├── index.html
+│   │   ├── manifest.json            # PWA manifest
+│   │   ├── service-worker.js
+│   │   └── favicon.ico
+│   ├── src/
+│   │   ├── index.tsx                 # Entry point
+│   │   ├── App.tsx                   # Root component + Router
+│   │   ├── theme/
+│   │   │   ├── theme.ts             # MUI theme configuration
+│   │   │   └── globalStyles.ts      # Global CSS-in-JS styles
+│   │   ├── store/
+│   │   │   ├── store.ts             # Redux store configuration
+│   │   │   ├── api/
+│   │   │   │   ├── apiSlice.ts      # RTK Query base API
+│   │   │   │   ├── authApi.ts       # Auth endpoints
+│   │   │   │   ├── tripsApi.ts      # Trips CRUD endpoints
+│   │   │   │   ├── stopsApi.ts      # Stops endpoints
+│   │   │   │   ├── activitiesApi.ts # Activities endpoints
+│   │   │   │   ├── citiesApi.ts     # Cities search endpoints
+│   │   │   │   ├── budgetApi.ts     # Budget endpoints
+│   │   │   │   └── adminApi.ts      # Admin endpoints
+│   │   │   └── slices/
+│   │   │       ├── authSlice.ts     # Auth state
+│   │   │       ├── uiSlice.ts       # UI state (modals, sidebar)
+│   │   │       └── tripSlice.ts     # Active trip editing state
+│   │   ├── components/
+│   │   │   ├── common/
+│   │   │   │   ├── Navbar.tsx
+│   │   │   │   ├── Sidebar.tsx
+│   │   │   │   ├── Footer.tsx
+│   │   │   │   ├── LoadingSpinner.tsx
+│   │   │   │   ├── ErrorBoundary.tsx
+│   │   │   │   ├── ConfirmDialog.tsx
+│   │   │   │   ├── SearchInput.tsx
+│   │   │   │   └── ProtectedRoute.tsx
+│   │   │   ├── auth/
+│   │   │   │   ├── LoginForm.tsx
+│   │   │   │   ├── SignupForm.tsx
+│   │   │   │   └── ForgotPasswordForm.tsx
+│   │   │   ├── trips/
+│   │   │   │   ├── TripCard.tsx
+│   │   │   │   ├── TripList.tsx
+│   │   │   │   ├── CreateTripForm.tsx
+│   │   │   │   └── TripCoverUpload.tsx
+│   │   │   ├── itinerary/
+│   │   │   │   ├── ItineraryBuilder.tsx
+│   │   │   │   ├── StopCard.tsx
+│   │   │   │   ├── StopList.tsx          # Drag-and-drop sortable list
+│   │   │   │   ├── ActivityCard.tsx
+│   │   │   │   ├── ActivitySearchModal.tsx
+│   │   │   │   ├── CitySearchModal.tsx
+│   │   │   │   ├── TimelineView.tsx
+│   │   │   │   └── CityGroupedView.tsx
+│   │   │   ├── budget/
+│   │   │   │   ├── BudgetOverview.tsx
+│   │   │   │   ├── BudgetPieChart.tsx
+│   │   │   │   ├── BudgetBarChart.tsx
+│   │   │   │   └── DailyBudgetAlert.tsx
+│   │   │   ├── calendar/
+│   │   │   │   ├── TripCalendar.tsx
+│   │   │   │   └── CalendarEvent.tsx
+│   │   │   ├── sharing/
+│   │   │   │   ├── ShareDialog.tsx
+│   │   │   │   ├── PublicItinerary.tsx
+│   │   │   │   └── CopyTripButton.tsx
+│   │   │   ├── profile/
+│   │   │   │   ├── ProfileForm.tsx
+│   │   │   │   ├── SavedCities.tsx
+│   │   │   │   └── DeleteAccountDialog.tsx
+│   │   │   └── admin/
+│   │   │       ├── AdminDashboard.tsx
+│   │   │       ├── UserGrowthChart.tsx
+│   │   │       ├── TopCitiesTable.tsx
+│   │   │       └── PlatformStats.tsx
+│   │   ├── pages/
+│   │   │   ├── LoginPage.tsx
+│   │   │   ├── SignupPage.tsx
+│   │   │   ├── ForgotPasswordPage.tsx
+│   │   │   ├── DashboardPage.tsx
+│   │   │   ├── MyTripsPage.tsx
+│   │   │   ├── CreateTripPage.tsx
+│   │   │   ├── ItineraryPage.tsx
+│   │   │   ├── BudgetPage.tsx
+│   │   │   ├── CalendarPage.tsx
+│   │   │   ├── SharedTripPage.tsx
+│   │   │   ├── ProfilePage.tsx
+│   │   │   ├── AdminPage.tsx
+│   │   │   └── NotFoundPage.tsx
+│   │   ├── hooks/
+│   │   │   ├── useAuth.ts
+│   │   │   ├── useDebounce.ts
+│   │   │   ├── useMediaQuery.ts
+│   │   │   └── useTripPermissions.ts
+│   │   ├── utils/
+│   │   │   ├── constants.ts
+│   │   │   ├── formatters.ts         # Date, currency formatters
+│   │   │   ├── validators.ts
+│   │   │   └── supabaseClient.ts     # Supabase JS client init
+│   │   └── types/
+│   │       ├── user.types.ts
+│   │       ├── trip.types.ts
+│   │       ├── stop.types.ts
+│   │       ├── activity.types.ts
+│   │       ├── city.types.ts
+│   │       ├── budget.types.ts
+│   │       └── api.types.ts
+│   ├── .env.example
+│   ├── tsconfig.json
+│   ├── package.json
+│   ├── vite.config.ts
+│   └── Dockerfile
+│
+├── server/                           # Node.js Backend
+│   ├── src/
+│   │   ├── index.ts                  # Server entry point
+│   │   ├── app.ts                    # Express app setup
+│   │   ├── config/
+│   │   │   ├── env.ts               # Environment variable validation
+│   │   │   ├── supabase.ts          # Supabase admin client
+│   │   │   ├── redis.ts             # Redis client
+│   │   │   └── cors.ts             # CORS configuration
+│   │   ├── middleware/
+│   │   │   ├── auth.middleware.ts    # JWT verification via Supabase
+│   │   │   ├── admin.middleware.ts   # Admin role check
+│   │   │   ├── rateLimiter.ts       # Redis-backed rate limiting
+│   │   │   ├── validate.ts          # Request validation middleware
+│   │   │   ├── errorHandler.ts      # Global error handler
+│   │   │   └── requestLogger.ts     # HTTP request logging
+│   │   ├── routes/
+│   │   │   ├── index.ts             # Route aggregator
+│   │   │   ├── auth.routes.ts
+│   │   │   ├── trips.routes.ts
+│   │   │   ├── stops.routes.ts
+│   │   │   ├── activities.routes.ts
+│   │   │   ├── cities.routes.ts
+│   │   │   ├── budget.routes.ts
+│   │   │   ├── sharing.routes.ts
+│   │   │   ├── users.routes.ts
+│   │   │   └── admin.routes.ts
+│   │   ├── controllers/
+│   │   │   ├── auth.controller.ts
+│   │   │   ├── trips.controller.ts
+│   │   │   ├── stops.controller.ts
+│   │   │   ├── activities.controller.ts
+│   │   │   ├── cities.controller.ts
+│   │   │   ├── budget.controller.ts
+│   │   │   ├── sharing.controller.ts
+│   │   │   ├── users.controller.ts
+│   │   │   └── admin.controller.ts
+│   │   ├── services/
+│   │   │   ├── auth.service.ts
+│   │   │   ├── trips.service.ts
+│   │   │   ├── stops.service.ts
+│   │   │   ├── activities.service.ts
+│   │   │   ├── cities.service.ts
+│   │   │   ├── budget.service.ts
+│   │   │   ├── sharing.service.ts
+│   │   │   ├── users.service.ts
+│   │   │   ├── admin.service.ts
+│   │   │   └── cache.service.ts     # Redis caching abstraction
+│   │   ├── validators/
+│   │   │   ├── auth.validators.ts
+│   │   │   ├── trips.validators.ts
+│   │   │   ├── stops.validators.ts
+│   │   │   ├── activities.validators.ts
+│   │   │   └── common.validators.ts
+│   │   ├── types/
+│   │   │   ├── express.d.ts         # Express request augmentation
+│   │   │   └── models.ts           # Shared type definitions
+│   │   └── utils/
+│   │       ├── ApiError.ts          # Custom error class
+│   │       ├── ApiResponse.ts       # Standardized response wrapper
+│   │       ├── logger.ts            # Winston logger
+│   │       └── helpers.ts           # Utility functions
+│   ├── prisma/
+│   │   ├── schema.prisma            # Prisma schema definition
+│   │   ├── migrations/              # Generated migrations
+│   │   └── seed.ts                  # Database seeder (cities, activities)
+│   ├── data/
+│   │   ├── cities.json              # Pre-loaded city data
+│   │   └── activities.json          # Pre-loaded activity data
+│   ├── tests/
+│   │   ├── unit/
+│   │   │   ├── services/
+│   │   │   └── utils/
+│   │   ├── integration/
+│   │   │   ├── auth.test.ts
+│   │   │   ├── trips.test.ts
+│   │   │   └── stops.test.ts
+│   │   └── setup.ts                 # Test configuration
+│   ├── .env.example
+│   ├── tsconfig.json
+│   ├── package.json
+│   ├── jest.config.ts
+│   └── Dockerfile
+│
+├── docker-compose.yml               # Local dev environment
+├── .github/
+│   └── workflows/
+│       ├── ci.yml                    # Lint, test, build
+│       └── deploy.yml                # Deploy to Vercel + Railway
+├── .gitignore
+├── README.md
+└── GlobalTrotters_PRD_v1.txt
+```
+
+---
+
+## 4. Database Schema (Prisma)
+
+### 4.1 Entity Relationship Diagram
+
+```mermaid
+erDiagram
+    USERS ||--o{ TRIPS : creates
+    USERS ||--o{ USER_SAVED_CITIES : saves
+    TRIPS ||--o{ STOPS : contains
+    TRIPS ||--o{ BUDGET_ESTIMATES : has
+    TRIPS ||--o{ SHARED_LINKS : generates
+    STOPS }o--|| CITIES : "located in"
+    STOPS ||--o{ STOP_ACTIVITIES : schedules
+    ACTIVITIES ||--o{ STOP_ACTIVITIES : "used in"
+    CITIES ||--o{ ACTIVITIES : offers
+    CITIES ||--o{ USER_SAVED_CITIES : "saved by"
+
+    USERS {
+        uuid id PK
+        string email UK
+        string password_hash
+        string full_name
+        string profile_pic
+        string language_pref
+        boolean is_admin
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    TRIPS {
+        uuid id PK
+        uuid user_id FK
+        string trip_name
+        text description
+        date start_date
+        date end_date
+        string cover_photo_url
+        boolean is_public
+        string share_token UK
+        decimal daily_budget
+        string currency
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    STOPS {
+        uuid id PK
+        uuid trip_id FK
+        uuid city_id FK
+        int order_index
+        date start_date
+        date end_date
+        text notes
+        decimal transport_cost
+        decimal accommodation_cost
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    CITIES {
+        uuid id PK
+        string name
+        string country
+        string country_code
+        decimal cost_index
+        int popularity_score
+        float latitude
+        float longitude
+        string timezone
+        string image_url
+    }
+
+    ACTIVITIES {
+        uuid id PK
+        uuid city_id FK
+        string name
+        text description
+        enum type
+        decimal avg_cost
+        decimal duration_hours
+        string image_url
+        timestamp created_at
+    }
+
+    STOP_ACTIVITIES {
+        uuid id PK
+        uuid stop_id FK
+        uuid activity_id FK
+        timestamp scheduled_time
+        decimal cost
+        text notes
+    }
+
+    BUDGET_ESTIMATES {
+        uuid id PK
+        uuid trip_id FK
+        decimal total_transport
+        decimal total_accommodation
+        decimal total_activities
+        decimal total_meals
+        decimal total_other
+        string currency
+        timestamp calculated_at
+    }
+
+    SHARED_LINKS {
+        uuid id PK
+        uuid trip_id FK
+        string token UK
+        timestamp expires_at
+        timestamp created_at
+    }
+
+    USER_SAVED_CITIES {
+        uuid id PK
+        uuid user_id FK
+        uuid city_id FK
+    }
+```
+
+### 4.2 Indexes Strategy
+
+| Table | Index | Purpose |
+|-------|-------|---------|
+| `users` | `email` (unique) | Fast login lookup |
+| `trips` | `(user_id, created_at)` | User's trips sorted by date |
+| `trips` | `share_token` (unique) | Public link lookup |
+| `stops` | `(trip_id, order_index)` | Ordered stops per trip |
+| `cities` | `name` (trigram GIN) | Full-text city search |
+| `cities` | `(country_code)` | Filter by country |
+| `activities` | `name` (trigram GIN) | Full-text activity search |
+| `activities` | `(city_id, type)` | Filter activities by city & type |
+| `stop_activities` | `(stop_id)` | All activities for a stop |
+| `user_saved_cities` | `(user_id, city_id)` unique | Prevent duplicate saves |
+
+---
+
+## 5. API Design (RESTful)
+
+### 5.1 Authentication Endpoints
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| `POST` | `/api/auth/register` | Create account | ✗ |
+| `POST` | `/api/auth/login` | Login, return JWT | ✗ |
+| `POST` | `/api/auth/refresh` | Refresh access token | ✗ |
+| `POST` | `/api/auth/forgot-password` | Send password reset email | ✗ |
+| `POST` | `/api/auth/reset-password` | Reset password with token | ✗ |
+| `POST` | `/api/auth/logout` | Invalidate refresh token | ✓ |
+
+### 5.2 Trip Endpoints
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| `GET` | `/api/trips` | List user's trips (paginated) | ✓ |
+| `POST` | `/api/trips` | Create new trip | ✓ |
+| `GET` | `/api/trips/:id` | Get trip with stops & activities | ✓ |
+| `PUT` | `/api/trips/:id` | Update trip details | ✓ |
+| `DELETE` | `/api/trips/:id` | Delete trip (cascade) | ✓ |
+
+### 5.3 Stop Endpoints
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| `POST` | `/api/trips/:tripId/stops` | Add stop to trip | ✓ |
+| `PUT` | `/api/stops/:id` | Update stop details | ✓ |
+| `DELETE` | `/api/stops/:id` | Remove stop | ✓ |
+| `PATCH` | `/api/trips/:tripId/stops/reorder` | Reorder stops (batch) | ✓ |
+
+### 5.4 Activity Endpoints
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| `POST` | `/api/stops/:stopId/activities` | Add activity to stop | ✓ |
+| `PUT` | `/api/stop-activities/:id` | Update scheduled activity | ✓ |
+| `DELETE` | `/api/stop-activities/:id` | Remove activity from stop | ✓ |
+
+### 5.5 Search Endpoints
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| `GET` | `/api/cities/search?q=&country=&limit=` | Search cities | ✓ |
+| `GET` | `/api/cities/popular` | Get popular cities | ✗ |
+| `GET` | `/api/activities/search?q=&type=&cityId=&maxCost=&maxDuration=` | Search activities | ✓ |
+
+### 5.6 Budget & Timeline Endpoints
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| `GET` | `/api/trips/:id/budget` | Computed budget breakdown | ✓ |
+| `GET` | `/api/trips/:id/timeline` | Flattened day-wise timeline | ✓ |
+
+### 5.7 Sharing Endpoints
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| `POST` | `/api/trips/:id/share` | Generate share token | ✓ |
+| `DELETE` | `/api/trips/:id/share` | Revoke share link | ✓ |
+| `GET` | `/api/public/trip/:token` | Get public trip (read-only) | ✗ |
+| `POST` | `/api/public/trip/:token/copy` | Copy trip to own account | ✓ |
+
+### 5.8 Profile & User Endpoints
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| `GET` | `/api/users/me` | Get own profile | ✓ |
+| `PUT` | `/api/users/me` | Update profile | ✓ |
+| `DELETE` | `/api/users/me` | Delete account | ✓ |
+| `GET` | `/api/users/me/saved-cities` | Get saved cities | ✓ |
+| `POST` | `/api/users/me/saved-cities` | Save a city | ✓ |
+| `DELETE` | `/api/users/me/saved-cities/:cityId` | Unsave a city | ✓ |
+
+### 5.9 Admin Endpoints
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| `GET` | `/api/admin/stats` | Platform statistics | ✓ Admin |
+| `GET` | `/api/admin/users` | List all users | ✓ Admin |
+| `GET` | `/api/admin/trips` | List all trips | ✓ Admin |
+
+### 5.10 Standardized Response Format
+
+```typescript
+// Success
+{
+  "success": true,
+  "data": { ... },
+  "meta": { "page": 1, "limit": 10, "total": 42 }
+}
+
+// Error
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Trip name is required",
+    "details": [ { "field": "tripName", "message": "Required" } ]
+  }
+}
+```
+
+---
+
+## 6. Frontend Screens & Component Architecture
+
+### 6.1 Route Map
+
+| Route | Page | Auth | Description |
+|-------|------|------|-------------|
+| `/login` | LoginPage | ✗ | Email/password login |
+| `/signup` | SignupPage | ✗ | Account creation |
+| `/forgot-password` | ForgotPasswordPage | ✗ | Password reset request |
+| `/dashboard` | DashboardPage | ✓ | Home dashboard |
+| `/trips` | MyTripsPage | ✓ | All user trips |
+| `/trips/new` | CreateTripPage | ✓ | Multi-step trip creation |
+| `/trips/:id` | ItineraryPage | ✓ | Itinerary builder + viewer |
+| `/trips/:id/budget` | BudgetPage | ✓ | Budget breakdown |
+| `/trips/:id/calendar` | CalendarPage | ✓ | Calendar/timeline view |
+| `/shared/:token` | SharedTripPage | ✗ | Public read-only itinerary |
+| `/profile` | ProfilePage | ✓ | User settings |
+| `/admin` | AdminPage | ✓ Admin | Admin dashboard |
+| `*` | NotFoundPage | ✗ | 404 page |
+
+### 6.2 Key UI/UX Features
+
+| Feature | Implementation |
+|---------|----------------|
+| **Drag-and-Drop Itinerary** | `react-dnd` with sortable stop cards; optimistic reorder with RTK Query |
+| **City Search Autocomplete** | Debounced input (300ms), MUI Autocomplete, cached results via Redis |
+| **Activity Search & Filter** | Filterable card grid with type chips, cost slider, duration filter |
+| **Budget Visualization** | Chart.js pie chart (category breakdown) + bar chart (daily spending) |
+| **Calendar View** | `react-big-calendar` with drag-to-reschedule, color-coded by activity type |
+| **Responsive Design** | Mobile-first with MUI breakpoints; collapsible sidebar on mobile |
+| **Dark Mode** | MUI theme toggle persisted in localStorage |
+| **PWA** | Service worker for offline caching of viewed itineraries |
+| **Share Link** | Copy-to-clipboard with toast notification; QR code generation |
+| **Loading States** | Skeleton screens (MUI Skeleton) for all data-fetching views |
+| **Error Handling** | ErrorBoundary component + toast notifications for API errors |
+
+---
+
+## 7. Authentication Flow
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant F as Frontend
+    participant S as Supabase Auth
+    participant B as Backend API
+
+    U->>F: Enter email & password
+    F->>S: supabase.auth.signUp() / signInWithPassword()
+    S-->>F: JWT access_token + refresh_token
+    F->>F: Store session (Supabase handles)
+
+    Note over F,B: Subsequent API calls
+    F->>B: GET /api/trips (Authorization: Bearer <JWT>)
+    B->>S: Verify JWT via Supabase public key
+    S-->>B: Decoded user { id, email, role }
+    B->>B: Fetch user's trips from DB
+    B-->>F: JSON response
+
+    Note over F,S: Token refresh (automatic)
+    F->>S: supabase.auth.refreshSession()
+    S-->>F: New JWT
+```
+
+### Authentication Strategy Details
+
+- **Supabase Auth** handles signup, login, password reset, email verification
+- **JWT** with 1-hour expiry; auto-refresh handled by `@supabase/supabase-js`
+- **Backend middleware** decodes JWT using Supabase public key — zero password storage on our end
+- **Row Level Security (RLS)** in Supabase as a defense-in-depth layer
+- **Rate limiting** via Redis: 100 requests/min per IP for auth endpoints
+
+---
+
+## 8. Security Implementation
+
+| Concern | Approach |
+|---------|----------|
+| **Authentication** | Supabase Auth (bcrypt-hashed, JWTs, refresh tokens) |
+| **Authorization** | Middleware checks `user.id` owns the resource; admin flag for admin routes |
+| **Input Validation** | Zod schemas on every request body/params |
+| **SQL Injection** | Prisma ORM with parameterized queries (no raw SQL) |
+| **XSS** | React auto-escapes; sanitize user-generated HTML with DOMPurify |
+| **CSRF** | SameSite cookies; token-based auth (not cookie-based sessions) |
+| **Rate Limiting** | Redis-backed rate limiter on auth + search endpoints |
+| **CORS** | Whitelist only `vercel-domain.app` and `localhost` |
+| **Helmet.js** | Security headers (X-Frame-Options, CSP, HSTS) |
+| **Dependency Audit** | `npm audit` in CI pipeline |
+
+---
+
+## 9. Caching Strategy
+
+| Data | TTL | Strategy |
+|------|-----|----------|
+| City search results | 24 hours | Redis key: `city:search:{query}` |
+| Popular cities | 6 hours | Redis key: `cities:popular` |
+| Activity search | 1 hour | Redis key: `activity:search:{hash}` |
+| Trip budget | 5 minutes | Redis key: `trip:{id}:budget` — invalidated on stop/activity change |
+| Public trip data | 10 minutes | Redis key: `public:trip:{token}` |
+
+---
+
+## 10. Testing Strategy
+
+### 10.1 Test Pyramid
+
+| Level | Tool | Coverage Target | What We Test |
+|-------|------|----------------|--------------|
+| **Unit** | Jest | 80%+ | Services, utils, validators, helpers |
+| **Integration** | Jest + Supertest | Key flows | API endpoints with real DB (test schema) |
+| **Component** | React Testing Library | Critical UI | Forms, cards, search, navigation |
+| **E2E** | Playwright | Happy paths | Login → Create Trip → Add Stops → Share |
+
+### 10.2 Key Test Cases
+
+**Backend:**
+- Auth: register, login, token refresh, password reset
+- Trips: CRUD with ownership validation
+- Stops: add/reorder/delete with date validation
+- Budget: accurate computation across stops & activities
+- Sharing: token generation, public access, copy trip
+- Admin: stats aggregation, role-based access
+
+**Frontend:**
+- Form validation (trip creation, profile update)
+- Drag-and-drop reorder
+- Search autocomplete with debounce
+- Budget chart rendering
+- Responsive layout at mobile/tablet/desktop breakpoints
+
+---
+
+## 11. CI/CD Pipeline
+
+```mermaid
+graph LR
+    A[Push to GitHub] --> B[GitHub Actions CI]
+    B --> C{Lint & Type Check}
+    C -->|Pass| D[Run Unit Tests]
+    C -->|Fail| X[❌ Block Merge]
+    D -->|Pass| E[Run Integration Tests]
+    D -->|Fail| X
+    E -->|Pass| F[Build Client + Server]
+    E -->|Fail| X
+    F -->|Pass| G{Branch?}
+    G -->|main| H[Deploy to Production]
+    G -->|develop| I[Deploy to Staging]
+    H --> J[Vercel: Client]
+    H --> K[Railway: Server]
+    I --> L[Vercel Preview]
+    I --> M[Railway Staging]
+```
+
+### CI Steps (`ci.yml`)
+1. **Checkout** code
+2. **Install** dependencies (`npm ci`)
+3. **Lint** (`eslint`) + **Type check** (`tsc --noEmit`)
+4. **Unit tests** (`jest --coverage`)
+5. **Integration tests** (spin up test DB via Docker)
+6. **Build** client (`vite build`) and server (`tsc`)
+7. **Upload** coverage to Codecov
+
+### Deploy Steps (`deploy.yml`)
+1. Triggered on merge to `main`
+2. Deploy `client/` to **Vercel** via Vercel CLI
+3. Deploy `server/` to **Railway** via Railway CLI
+4. Run **Prisma migrations** against production Supabase
+5. Invalidate CDN cache
+
+---
+
+## 12. Environment Variables
+
+### Client (`.env`)
+```
+VITE_SUPABASE_URL=https://xxx.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJ...
+VITE_API_BASE_URL=https://your-backend.railway.app/api
+VITE_APP_NAME=GlobalTrotters
+```
+
+### Server (`.env`)
+```
+PORT=3001
+NODE_ENV=production
+DATABASE_URL=postgresql://user:pass@host:5432/globaltrotters
+SUPABASE_URL=https://xxx.supabase.co
+SUPABASE_SERVICE_KEY=eyJ...
+REDIS_URL=redis://default:pass@host:6379
+CORS_ORIGIN=https://your-app.vercel.app
+JWT_SECRET=fallback-secret-for-non-supabase-tokens
+```
+
+---
+
+## 13. Data Seeding
+
+Pre-populate the database with:
+- **200+ cities** from curated dataset (name, country, lat/lng, cost index, popularity score, image)
+- **500+ activities** across categories (sightseeing, food, adventure, culture, nightlife, shopping, nature)
+- Each activity linked to a specific city with realistic costs and durations
+
+Data source: Curated JSON files in `server/data/`, loaded via `prisma/seed.ts`.
+
+---
+
+## 14. PWA Configuration
+
+| Feature | Implementation |
+|---------|----------------|
+| **manifest.json** | App name, icons (192×192, 512×512), theme color, start URL |
+| **Service Worker** | Workbox for precaching static assets + runtime caching for API responses |
+| **Offline Support** | Cache viewed itineraries for offline reading |
+| **Install Prompt** | Custom "Add to Home Screen" banner after 2nd visit |
+
+---
+
+## 15. Phased Delivery Roadmap
+
+### Phase 1: Foundation & Auth
+> **Deliverables:** Project setup, database schema, auth system, basic layout
+
+| # | Task | Files |
+|---|------|-------|
+| 1 | Initialize monorepo (client + server) | `package.json`, configs |
+| 2 | Configure Vite + React + TypeScript + MUI theme | `client/` setup |
+| 3 | Configure Express + TypeScript + Prisma | `server/` setup |
+| 4 | Define Prisma schema + run migrations | `schema.prisma` |
+| 5 | Implement Supabase Auth integration | Auth middleware, Supabase client |
+| 6 | Build Login/Signup/ForgotPassword pages | Auth components + pages |
+| 7 | Build app shell (Navbar, Sidebar, ProtectedRoute) | Common components |
+| 8 | Seed database with cities & activities | `seed.ts`, JSON data |
+
+---
+
+### Phase 2: Trip CRUD & Dashboard
+> **Deliverables:** Dashboard, create/list/view/edit/delete trips
+
+| # | Task | Files |
+|---|------|-------|
+| 1 | Implement Trip CRUD API endpoints | Routes, controllers, services |
+| 2 | Build Dashboard page (greeting, upcoming trips, popular cities) | DashboardPage |
+| 3 | Build My Trips page (card list with sort/filter) | MyTripsPage, TripCard |
+| 4 | Build Create Trip multi-step form | CreateTripPage, CreateTripForm |
+| 5 | Implement cover photo upload (Supabase Storage) | TripCoverUpload |
+| 6 | RTK Query integration for trips API | `tripsApi.ts` |
+
+---
+
+### Phase 3: Itinerary Builder (Stops & Activities)
+> **Deliverables:** Full itinerary builder with drag-and-drop, city/activity search
+
+| # | Task | Files |
+|---|------|-------|
+| 1 | Implement Stops API (CRUD + reorder) | Routes, controllers, services |
+| 2 | Implement Activities API (add/update/remove from stop) | Routes, controllers |
+| 3 | Build City Search with autocomplete | CitySearchModal, citiesApi |
+| 4 | Build Activity Search with filters | ActivitySearchModal, activitiesApi |
+| 5 | Build drag-and-drop stop list (react-dnd) | StopList, StopCard |
+| 6 | Build Itinerary Page with two view modes | ItineraryPage, TimelineView, CityGroupedView |
+| 7 | Implement Redis caching for search | cache.service.ts |
+
+---
+
+### Phase 4: Budget & Calendar
+> **Deliverables:** Budget computation + charts, calendar/timeline view
+
+| # | Task | Files |
+|---|------|-------|
+| 1 | Implement Budget computation service | budget.service.ts |
+| 2 | Build Budget API endpoint | budget.routes.ts, controller |
+| 3 | Build Budget page with Chart.js visualizations | BudgetPage, PieChart, BarChart |
+| 4 | Implement daily budget alerts | DailyBudgetAlert |
+| 5 | Build Calendar page with react-big-calendar | CalendarPage, TripCalendar |
+| 6 | Implement drag-to-reschedule on calendar | CalendarEvent |
+
+---
+
+### Phase 5: Sharing & Profile
+> **Deliverables:** Public share links, copy trip, profile management
+
+| # | Task | Files |
+|---|------|-------|
+| 1 | Implement Share API (generate/revoke token) | sharing.routes.ts, service |
+| 2 | Build Public Itinerary page (read-only) | SharedTripPage, PublicItinerary |
+| 3 | Implement Copy Trip functionality | CopyTripButton, API |
+| 4 | Build Share Dialog (copy link, QR code) | ShareDialog |
+| 5 | Build Profile page (edit info, saved cities) | ProfilePage, ProfileForm |
+| 6 | Implement saved cities (CRUD) | SavedCities, users.routes.ts |
+| 7 | Implement Delete Account with confirmation | DeleteAccountDialog |
+
+---
+
+### Phase 6: Admin & Polish
+> **Deliverables:** Admin dashboard, responsive polish, dark mode, PWA
+
+| # | Task | Files |
+|---|------|-------|
+| 1 | Implement Admin API endpoints | admin.routes.ts, service |
+| 2 | Build Admin Dashboard (stats, charts, user table) | AdminPage, charts |
+| 3 | Implement dark mode toggle | theme.ts, uiSlice |
+| 4 | Responsive design audit & fixes | All components |
+| 5 | PWA setup (manifest, service worker) | manifest.json, SW |
+| 6 | Loading skeletons & error boundaries | LoadingSpinner, ErrorBoundary |
+| 7 | Accessibility audit (a11y) | ARIA labels, keyboard nav |
+
+---
+
+### Phase 7: Testing, Documentation & Deployment
+> **Deliverables:** Tests, API docs, CI/CD, production deployment
+
+| # | Task | Files |
+|---|------|-------|
+| 1 | Write unit tests (services, utils, validators) | `tests/unit/` |
+| 2 | Write integration tests (API endpoints) | `tests/integration/` |
+| 3 | Write component tests (critical UI) | Component `*.test.tsx` |
+| 4 | Setup GitHub Actions CI/CD | `.github/workflows/` |
+| 5 | Write API documentation (Swagger/OpenAPI) | `swagger.yaml` |
+| 6 | Production deployment (Vercel + Railway) | Deploy configs |
+| 7 | Write README with setup instructions | `README.md` |
+| 8 | Performance optimization (bundle analysis, lazy loading) | Vite config |
+
+---
+
+## 16. Done Criteria
+
+| Criteria | Verification |
+|----------|-------------|
+| ✅ User can register, login, and reset password | Manual + integration test |
+| ✅ User can create, edit, view, and delete trips | Manual + integration test |
+| ✅ User can add/reorder/remove stops with city search | Manual + E2E test |
+| ✅ User can add/schedule/remove activities per stop | Manual + integration test |
+| ✅ Itinerary displays in day-wise and city-grouped views | Manual verification |
+| ✅ Budget breakdown computed and displayed with charts | Manual + unit test |
+| ✅ Calendar view shows activities with drag-to-reschedule | Manual verification |
+| ✅ Public share link works for anonymous users | Manual + integration test |
+| ✅ Copy Trip duplicates itinerary for authenticated users | Manual + integration test |
+| ✅ Profile edit, saved cities, and delete account work | Manual verification |
+| ✅ Admin dashboard shows platform stats | Manual + role-based test |
+| ✅ Responsive design works on mobile/tablet/desktop | Manual + visual regression |
+| ✅ PWA installable and works offline for cached trips | Manual verification |
+| ✅ All API endpoints validate input and return proper errors | Integration tests |
+| ✅ Rate limiting active on auth and search endpoints | Integration test |
+| ✅ CI/CD pipeline passes lint, tests, and deploys | GitHub Actions |
+| ✅ 80%+ unit test coverage on backend services | Jest coverage report |
+
+---
+
+## User Review Required
+
+> [!IMPORTANT]
+> **Please review and confirm the following before I begin implementation:**
+> 1. **Tech Stack**: React + TypeScript + MUI (frontend), Node.js + Express + Prisma (backend), Supabase (DB + Auth), Redis caching — are you satisfied with these choices?
+> 2. **Database**: The Prisma ORM will be used for migrations and queries against Supabase PostgreSQL. Acceptable?
+> 3. **Phase Order**: I'll build Phase 1 (Foundation + Auth) first and request confirmation before proceeding. Agreeable?
+> 4. **Deployment**: Vercel (frontend) + Railway (backend) + Supabase (DB) — confirmed?
+> 5. **PWA**: Service worker with Workbox for offline support — do you want this from Phase 1 or deferred to Phase 6?
+
+## Open Questions
+
+> [!IMPORTANT]
+> 1. **Supabase Credentials**: Do you already have a Supabase project set up, or should I provide instructions to create one?
+> 2. **Redis Provider**: Preference between Railway Redis plugin vs. Upstash (free tier)?
+> 3. **Image Storage**: Supabase Storage (free 1GB) vs. Cloudinary for cover photos and activity images?
+> 4. **Email Service**: For password reset emails — should we rely on Supabase's built-in email or integrate a service like Resend/SendGrid?
+> 5. **Google Maps API**: For transport cost estimation between cities — do you have an API key, or should we use manual user input for transport costs in the MVP?

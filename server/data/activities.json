@@ -1,0 +1,87 @@
+[
+  { "name": "Eiffel Tower Visit", "description": "Iconic iron lattice tower on the Champ de Mars. Take the elevator or stairs to the top for stunning panoramic views of Paris.", "type": "SIGHTSEEING", "avgCost": 26, "durationHours": 2.5, "cityName": "Paris", "imageUrl": "https://images.unsplash.com/photo-1511739001486-6bfe10ce65f4?w=600" },
+  { "name": "Louvre Museum", "description": "World's largest art museum and home to the Mona Lisa. Explore over 35,000 artworks spanning millennia.", "type": "CULTURE", "avgCost": 17, "durationHours": 4, "cityName": "Paris", "imageUrl": "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=600" },
+  { "name": "Seine River Cruise", "description": "Relaxing boat cruise along the Seine, passing Notre-Dame, the Louvre, and other iconic landmarks.", "type": "SIGHTSEEING", "avgCost": 15, "durationHours": 1.5, "cityName": "Paris", "imageUrl": "https://images.unsplash.com/photo-1478391679764-b2d8b3cd1e94?w=600" },
+  { "name": "French Bistro Dinner", "description": "Enjoy authentic French cuisine at a traditional Parisian bistro. Try escargot, coq au vin, or crème brûlée.", "type": "FOOD", "avgCost": 45, "durationHours": 2, "cityName": "Paris", "imageUrl": "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600" },
+
+  { "name": "Senso-ji Temple", "description": "Tokyo's oldest temple in Asakusa, featuring a stunning five-story pagoda and the famous Kaminarimon Gate.", "type": "CULTURE", "avgCost": 0, "durationHours": 2, "cityName": "Tokyo", "imageUrl": "https://images.unsplash.com/photo-1583862908048-0f46bddbd4cc?w=600" },
+  { "name": "Tsukiji Outer Market", "description": "Bustling market featuring fresh sushi, seafood, and Japanese street food delicacies.", "type": "FOOD", "avgCost": 30, "durationHours": 2, "cityName": "Tokyo", "imageUrl": "https://images.unsplash.com/photo-1553621042-f6e147245754?w=600" },
+  { "name": "Shibuya Crossing", "description": "Experience the world's busiest pedestrian crossing, then explore Shibuya's vibrant shopping and nightlife district.", "type": "SIGHTSEEING", "avgCost": 0, "durationHours": 1.5, "cityName": "Tokyo", "imageUrl": "https://images.unsplash.com/photo-1542051841857-5f90071e7989?w=600" },
+  { "name": "TeamLab Borderless", "description": "Immersive digital art museum with stunning interactive light installations.", "type": "CULTURE", "avgCost": 32, "durationHours": 3, "cityName": "Tokyo", "imageUrl": "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=600" },
+
+  { "name": "Statue of Liberty Tour", "description": "Ferry ride to Liberty Island with access to the pedestal or crown for sweeping views of Manhattan.", "type": "SIGHTSEEING", "avgCost": 24, "durationHours": 4, "cityName": "New York", "imageUrl": "https://images.unsplash.com/photo-1605130284535-11dd9eedc58a?w=600" },
+  { "name": "Central Park Walk", "description": "Explore 843 acres of urban parkland with lakes, gardens, and iconic spots like Bethesda Fountain.", "type": "NATURE", "avgCost": 0, "durationHours": 3, "cityName": "New York", "imageUrl": "https://images.unsplash.com/photo-1568515387631-8b650bbcdb90?w=600" },
+  { "name": "Broadway Show", "description": "Catch a world-class musical or play in the Theater District — the heart of American performing arts.", "type": "CULTURE", "avgCost": 120, "durationHours": 3, "cityName": "New York", "imageUrl": "https://images.unsplash.com/photo-1520364738708-bf91c89331ce?w=600" },
+  { "name": "NYC Pizza Tour", "description": "Sample slices from legendary pizzerias across Manhattan and Brooklyn.", "type": "FOOD", "avgCost": 35, "durationHours": 3, "cityName": "New York", "imageUrl": "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600" },
+
+  { "name": "Tower of London", "description": "Historic castle on the River Thames, home to the Crown Jewels and centuries of royal history.", "type": "CULTURE", "avgCost": 30, "durationHours": 3, "cityName": "London", "imageUrl": "https://images.unsplash.com/photo-1529655683826-aba9b3e77383?w=600" },
+  { "name": "British Museum", "description": "Free world-class museum with over 8 million works including the Rosetta Stone and Egyptian mummies.", "type": "CULTURE", "avgCost": 0, "durationHours": 4, "cityName": "London", "imageUrl": "https://images.unsplash.com/photo-1590517862150-e2c1e11b22d3?w=600" },
+  { "name": "Afternoon Tea", "description": "Classic British afternoon tea experience with scones, sandwiches, and premium teas.", "type": "FOOD", "avgCost": 55, "durationHours": 2, "cityName": "London", "imageUrl": "https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=600" },
+
+  { "name": "Colosseum Tour", "description": "Step inside the ancient amphitheater that hosted gladiatorial contests for over 50,000 spectators.", "type": "SIGHTSEEING", "avgCost": 18, "durationHours": 2.5, "cityName": "Rome", "imageUrl": "https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=600" },
+  { "name": "Vatican Museums", "description": "Explore the Vatican's vast art collection, culminating in the breathtaking Sistine Chapel ceiling.", "type": "CULTURE", "avgCost": 20, "durationHours": 4, "cityName": "Rome", "imageUrl": "https://images.unsplash.com/photo-1531572753322-ad063cecc140?w=600" },
+  { "name": "Roman Pasta Experience", "description": "Learn to make authentic cacio e pepe, carbonara, and amatriciana with a local chef.", "type": "FOOD", "avgCost": 65, "durationHours": 3, "cityName": "Rome", "imageUrl": "https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=600" },
+
+  { "name": "Sagrada Familia", "description": "Gaudí's unfinished masterpiece — a breathtaking basilica blending Gothic and Art Nouveau styles.", "type": "SIGHTSEEING", "avgCost": 26, "durationHours": 2, "cityName": "Barcelona", "imageUrl": "https://images.unsplash.com/photo-1583779457711-ab62e tried?w=600" },
+  { "name": "La Boqueria Market", "description": "Vibrant public market on La Rambla with fresh produce, tapas bars, and exotic juices.", "type": "FOOD", "avgCost": 20, "durationHours": 2, "cityName": "Barcelona", "imageUrl": "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=600" },
+
+  { "name": "Burj Khalifa Observation", "description": "Visit the observation deck of the world's tallest building for panoramic views of Dubai.", "type": "SIGHTSEEING", "avgCost": 40, "durationHours": 2, "cityName": "Dubai", "imageUrl": "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=600" },
+  { "name": "Desert Safari", "description": "Thrilling 4x4 dune bashing, camel rides, and a BBQ dinner under the stars in the Arabian desert.", "type": "ADVENTURE", "avgCost": 65, "durationHours": 6, "cityName": "Dubai", "imageUrl": "https://images.unsplash.com/photo-1451337516015-6b6e9a44a8a3?w=600" },
+
+  { "name": "Grand Palace Visit", "description": "Thailand's most sacred temple complex featuring the Emerald Buddha and intricate architecture.", "type": "CULTURE", "avgCost": 15, "durationHours": 3, "cityName": "Bangkok", "imageUrl": "https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=600" },
+  { "name": "Street Food Night Tour", "description": "Guided tour through Chinatown and local markets sampling pad thai, mango sticky rice, and more.", "type": "FOOD", "avgCost": 25, "durationHours": 3, "cityName": "Bangkok", "imageUrl": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600" },
+  { "name": "Floating Market Trip", "description": "Visit the colorful Damnoen Saduak Floating Market where vendors sell goods from traditional boats.", "type": "SHOPPING", "avgCost": 20, "durationHours": 4, "cityName": "Bangkok", "imageUrl": "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=600" },
+
+  { "name": "Bosphorus Cruise", "description": "Scenic boat tour between Europe and Asia along the Bosphorus Strait.", "type": "SIGHTSEEING", "avgCost": 12, "durationHours": 2, "cityName": "Istanbul", "imageUrl": "https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=600" },
+  { "name": "Hagia Sophia", "description": "Stunning architectural masterpiece that served as a cathedral, mosque, and now museum.", "type": "CULTURE", "avgCost": 15, "durationHours": 2, "cityName": "Istanbul", "imageUrl": "https://images.unsplash.com/photo-1570939274717-7eda259b50ed?w=600" },
+
+  { "name": "Gardens by the Bay", "description": "Futuristic nature park with iconic Supertree Grove and two massive climate-controlled conservatories.", "type": "NATURE", "avgCost": 25, "durationHours": 3, "cityName": "Singapore", "imageUrl": "https://images.unsplash.com/photo-1506351421178-63b52a2d2562?w=600" },
+  { "name": "Hawker Centre Food Tour", "description": "Sample affordable Michelin-starred dishes across Singapore's legendary hawker centres.", "type": "FOOD", "avgCost": 15, "durationHours": 3, "cityName": "Singapore", "imageUrl": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600" },
+
+  { "name": "Canal Bike Tour", "description": "Explore Amsterdam's 165 canals by bike, passing historic houses, bridges, and the Anne Frank House.", "type": "ADVENTURE", "avgCost": 30, "durationHours": 3, "cityName": "Amsterdam", "imageUrl": "https://images.unsplash.com/photo-1534351590666-13e3e96b5017?w=600" },
+  { "name": "Van Gogh Museum", "description": "Home to the world's largest collection of Van Gogh's paintings, drawings, and letters.", "type": "CULTURE", "avgCost": 20, "durationHours": 2.5, "cityName": "Amsterdam", "imageUrl": "https://images.unsplash.com/photo-1583037189850-1921ae7c6c22?w=600" },
+
+  { "name": "Ubud Rice Terraces", "description": "Walk through the stunning Tegallalang rice terraces and learn about traditional Balinese irrigation.", "type": "NATURE", "avgCost": 5, "durationHours": 3, "cityName": "Bali", "imageUrl": "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600" },
+  { "name": "Surf Lesson in Kuta", "description": "Beginner-friendly surf lessons on Bali's famous Kuta Beach with experienced local instructors.", "type": "ADVENTURE", "avgCost": 25, "durationHours": 2, "cityName": "Bali", "imageUrl": "https://images.unsplash.com/photo-1502680390548-bdbac40ae517?w=600" },
+  { "name": "Balinese Cooking Class", "description": "Market visit followed by hands-on cooking of traditional Balinese dishes like nasi goreng and satay.", "type": "FOOD", "avgCost": 30, "durationHours": 4, "cityName": "Bali", "imageUrl": "https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=600" },
+  { "name": "Temple Sunset Tour", "description": "Visit the iconic Tanah Lot and Uluwatu temples at sunset for spectacular ocean views.", "type": "CULTURE", "avgCost": 10, "durationHours": 4, "cityName": "Bali", "imageUrl": "https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=600" },
+
+  { "name": "Tram 28 Ride", "description": "Ride Lisbon's iconic yellow tram through narrow streets, historic neighborhoods, and scenic viewpoints.", "type": "SIGHTSEEING", "avgCost": 3, "durationHours": 1, "cityName": "Lisbon", "imageUrl": "https://images.unsplash.com/photo-1585208798174-6cedd86e019a?w=600" },
+  { "name": "Pastel de Nata Tour", "description": "Visit the best pastéis de nata bakeries including the legendary Pastéis de Belém.", "type": "FOOD", "avgCost": 15, "durationHours": 2, "cityName": "Lisbon", "imageUrl": "https://images.unsplash.com/photo-1557426272-fc759fdf7a8d?w=600" },
+
+  { "name": "Taj Mahal Sunrise Visit", "description": "Witness the breathtaking ivory-white marble mausoleum at sunrise — one of the Seven Wonders of the World.", "type": "SIGHTSEEING", "avgCost": 15, "durationHours": 3, "cityName": "Delhi", "imageUrl": "https://images.unsplash.com/photo-1564507592333-c60657eea523?w=600" },
+  { "name": "Old Delhi Food Walk", "description": "Navigate the bustling lanes of Chandni Chowk sampling chaat, paranthas, and jalebi.", "type": "FOOD", "avgCost": 10, "durationHours": 3, "cityName": "Delhi", "imageUrl": "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=600" },
+
+  { "name": "Amber Fort Excursion", "description": "Explore the majestic hilltop fortress with its stunning mix of Hindu and Mughal architecture.", "type": "SIGHTSEEING", "avgCost": 8, "durationHours": 3, "cityName": "Jaipur", "imageUrl": "https://images.unsplash.com/photo-1599661046289-e31897846e41?w=600" },
+
+  { "name": "Fushimi Inari Shrine", "description": "Walk through thousands of vermillion torii gates winding up the sacred Mount Inari.", "type": "CULTURE", "avgCost": 0, "durationHours": 3, "cityName": "Kyoto", "imageUrl": "https://images.unsplash.com/photo-1478436127897-769e1b3f0f36?w=600" },
+  { "name": "Traditional Tea Ceremony", "description": "Experience an authentic Japanese tea ceremony in a traditional Kyoto tea house.", "type": "CULTURE", "avgCost": 30, "durationHours": 1.5, "cityName": "Kyoto", "imageUrl": "https://images.unsplash.com/photo-1545048702-79362596cdc9?w=600" },
+
+  { "name": "Table Mountain Hike", "description": "Hike or take the cable car to the flat-topped mountain for breathtaking views of Cape Town.", "type": "ADVENTURE", "avgCost": 18, "durationHours": 4, "cityName": "Cape Town", "imageUrl": "https://images.unsplash.com/photo-1580060839134-75a5edca2e99?w=600" },
+
+  { "name": "Thermal Bath Experience", "description": "Relax in Budapest's famous Széchenyi or Gellért thermal baths, fed by natural hot springs.", "type": "NATURE", "avgCost": 22, "durationHours": 3, "cityName": "Budapest", "imageUrl": "https://images.unsplash.com/photo-1551526794-f51e1079a12e?w=600" },
+
+  { "name": "Golden Circle Tour", "description": "Full-day tour visiting Þingvellir National Park, Geysir geothermal area, and Gullfoss waterfall.", "type": "ADVENTURE", "avgCost": 80, "durationHours": 8, "cityName": "Reykjavik", "imageUrl": "https://images.unsplash.com/photo-1504829857797-ddff29c27927?w=600" },
+
+  { "name": "Santorini Sunset Sailing", "description": "Catamaran cruise around the caldera with swimming stops and a Greek BBQ dinner at sunset.", "type": "ADVENTURE", "avgCost": 100, "durationHours": 5, "cityName": "Santorini", "imageUrl": "https://images.unsplash.com/photo-1613395877344-13d4a8e0d49e?w=600" },
+
+  { "name": "Machu Picchu Trek", "description": "Full-day guided tour of the ancient Incan citadel perched high in the Andes Mountains.", "type": "ADVENTURE", "avgCost": 55, "durationHours": 8, "cityName": "Cusco", "imageUrl": "https://images.unsplash.com/photo-1526392060635-9d6019884377?w=600" },
+
+  { "name": "Ha Long Bay Cruise", "description": "Overnight cruise through emerald waters and towering limestone pillars topped with rainforests.", "type": "ADVENTURE", "avgCost": 120, "durationHours": 24, "cityName": "Hanoi", "imageUrl": "https://images.unsplash.com/photo-1528127269322-539801943592?w=600" },
+
+  { "name": "Pyramids of Giza Tour", "description": "Visit the last remaining Wonder of the Ancient World, including the Great Sphinx.", "type": "SIGHTSEEING", "avgCost": 20, "durationHours": 4, "cityName": "Cairo", "imageUrl": "https://images.unsplash.com/photo-1539768942893-daf53e448371?w=600" },
+
+  { "name": "Christ the Redeemer Visit", "description": "Take the cog train up Corcovado Mountain to the iconic 30m Art Deco statue.", "type": "SIGHTSEEING", "avgCost": 22, "durationHours": 3, "cityName": "Rio de Janeiro", "imageUrl": "https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=600" },
+
+  { "name": "Golden Gate Bridge Walk", "description": "Walk or bike across the iconic 2.7km suspension bridge with views of San Francisco Bay.", "type": "SIGHTSEEING", "avgCost": 0, "durationHours": 2, "cityName": "San Francisco", "imageUrl": "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=600" },
+
+  { "name": "Uffizi Gallery", "description": "Home to masterpieces by Botticelli, Leonardo, and Michelangelo in the heart of Florence.", "type": "CULTURE", "avgCost": 25, "durationHours": 3, "cityName": "Florence", "imageUrl": "https://images.unsplash.com/photo-1543429257-3eb0b65d9c58?w=600" },
+
+  { "name": "Old Town Walls Walk", "description": "Walk the medieval city walls for stunning views of Dubrovnik's terracotta rooftops and the Adriatic.", "type": "SIGHTSEEING", "avgCost": 30, "durationHours": 2, "cityName": "Dubrovnik", "imageUrl": "https://images.unsplash.com/photo-1555990793-da11153c3fe4?w=600" },
+
+  { "name": "Overwater Villa Stay", "description": "Experience luxury in an overwater bungalow with glass floors and direct ocean access.", "type": "OTHER", "avgCost": 500, "durationHours": 24, "cityName": "Maldives", "imageUrl": "https://images.unsplash.com/photo-1514282401047-d79a71a590e8?w=600" },
+
+  { "name": "K-Pop Experience Tour", "description": "Visit K-pop studios, merchandise shops, and entertainment districts in Gangnam and Hongdae.", "type": "CULTURE", "avgCost": 35, "durationHours": 4, "cityName": "Seoul", "imageUrl": "https://images.unsplash.com/photo-1546874177-9e664107314e?w=600" },
+
+  { "name": "Charles Bridge Walk", "description": "Stroll across the 14th-century stone bridge adorned with baroque statues and street musicians.", "type": "SIGHTSEEING", "avgCost": 0, "durationHours": 1.5, "cityName": "Prague", "imageUrl": "https://images.unsplash.com/photo-1519677100203-a0e668c92439?w=600" }
+]

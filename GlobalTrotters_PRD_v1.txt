@@ -1,0 +1,306 @@
+Role: You are a Senior Full-Stack Developer with 10+ years of experience in architecting, UI designing, developing, and deploying scalable, secure, and maintainable web applications.
+
+Core Directives:
+
+   1. Best Practices: Write clean, DRY (Don't Repeat Yourself), and well-documented code. Follow industry-standard design patterns and strictly adhere to SOLID principles.
+   2. Stack Awareness: Optimize front-end code for performance, accessibility (a11y), and responsiveness. Optimize back-end code for speed, low latency, and robust error handling.
+   3. Security: Implement secure authentication/authorization, data validation, and sanitization. Protect against common vulnerabilities.
+   4. Testing: Provide unit, integration, and end-to-end tests where applicable.
+   5. Deployment & DevOps: Write enterprise level production-ready configuration files and provide clear setup instructions.
+
+Workflow Constraints:
+
+* Think Before You Code: Briefly outline your architectural decisions and the tech stack chosen before generating any code.
+* Explain Your Choices: Provide a concise explanation of why you selected specific libraries, frameworks, or algorithms for this task.
+* Modular Code: Break large problems into modular, reusable components or services.
+* Incremental Delivery: If a prompt requires a large application, build it phase-by-phase. Ask for confirmation before moving to the next phase.
+* Markdown Output: Format all code blocks with the correct language syntax (e.g., typescript, javascript) and provide inline comments for complex logic.
+
+All the details related to the web application is provided in the '"E:\Global_trotter\GlobalTrotters_PRD_v1.txt"' file such as Problems, Name, Free Services, Tech Stack, Database, Pipeline, All Features, PWA, Auto Behaviors, Done Criteria
+
+Please acknowledge that you understand these rules and are ready to assist. You have to build a production ready system, you will first outline the architecture, then provide the code, and finally test and deploy it.
+
+So create a complete proper detailed plan and save this plan in a new file
+
+An implementation plan'E:\Streetup\Furniture CRM\implementation_plan_Furniture' is already created, so continue exactly according to the implementation plan
+So, understand the implementation plan and check the files and continue with the plan.
+And stick exactly to the implementation plan, make everything according to implementation plan only.
+Also phase 1 is completed, so now proceed and continue with phase 2
+
+## Comprehensive Solution for GlobalTrotters Travel Planning Application
+
+### 1. Introduction
+GlobalTrotters is a multi‑city travel planning platform that empowers users to create, customize, and share complex itineraries. Our solution combines a robust relational database, a scalable backend API, and an intuitive, responsive frontend to deliver a seamless user experience. The design follows a modular approach, ensuring each feature is well‑integrated and can be independently evolved.
+
+---
+
+### 2. System Architecture
+The application is built as a **three‑tier architecture**:
+- **Frontend (Client)** – React (with TypeScript) for a dynamic, component‑based UI; state managed via Redux Toolkit.
+- **Backend (Server)** – Node.js + Express providing RESTful APIs and business logic.
+- **Database** – PostgreSQL (relational) to store user, trip, and activity data with full ACID compliance.
+- **Additional Services**:
+  - **Authentication**: JWT‑based with refresh tokens.
+  - **File Storage**: Railway for cover photos and activity images.
+  - **Caching**: Redis for frequent reads (city search, popular destinations) and session caching.
+  - **Search**: PostgreSQL full‑text search or Elasticsearch for city/activity search.
+  - **Charts/Reporting**: Server‑side aggregation + Chart.js on the frontend.
+
+![High‑level architecture](https://via.placeholder.com/800x400?text=Architecture+Diagram)
+
+**Data Flow**:
+- User interacts with the frontend → API calls to backend → backend validates and interacts with the database → returns JSON responses → frontend updates UI.
+- Public sharing generates a unique token and serves a read‑only version from the same backend.
+
+---
+
+### 3. Database Schema (Relational Design)
+We define a clean, normalized schema with the following core tables:
+
+| Table | Columns | Description |
+|-------|---------|-------------|
+| **users** | `id` (PK), `email`, `password_hash`, `full_name`, `profile_pic`, `language_pref`, `created_at`, `updated_at` | User accounts. |
+| **trips** | `id` (PK), `user_id` (FK → users), `trip_name`, `description`, `start_date`, `end_date`, `cover_photo_url`, `is_public` (boolean), `share_token` (unique), `created_at`, `updated_at` | A trip belongs to one user. |
+| **stops** | `id` (PK), `trip_id` (FK → trips), `city_id` (FK → cities), `order_index` (integer), `start_date` (date), `end_date` (date), `notes` (text), `created_at`, `updated_at` | Each trip has multiple stops; each stop references a city and has its own date range. |
+| **cities** | `id` (PK), `name`, `country`, `country_code`, `cost_index` (decimal), `popularity_score` (integer), `latitude`, `longitude`, `timezone` | Pre‑loaded with data from an external source. |
+| **activities** | `id` (PK), `city_id` (FK → cities) or `null` (global), `name`, `description`, `type` (enum: sightseeing, food, adventure, etc.), `avg_cost` (decimal), `duration_hours` (decimal), `image_url`, `created_at` | Master list of activities, optionally associated with a city. |
+| **stop_activities** | `id` (PK), `stop_id` (FK → stops), `activity_id` (FK → activities), `scheduled_time` (timestamp), `cost` (decimal) – can override `avg_cost`, `notes` | Links activities to a specific stop, with a concrete time and cost. |
+| **budget_estimates** | `id` (PK), `trip_id` (FK → trips), `total_transport` (decimal), `total_accommodation` (decimal), `total_activities` (decimal), `total_meals` (decimal), `total_other` (decimal), `currency` (varchar), `calculated_at` (timestamp) | Stores aggregated budget breakdown; could be recomputed on each change. |
+| **shared_links** | `id` (PK), `trip_id` (FK → trips), `token` (unique), `expires_at` (timestamp) – if expiry needed | For managing public share tokens; we can also use `share_token` in trips table directly. |
+| **user_saved_cities** | `id` (PK), `user_id` (FK → users), `city_id` (FK → cities) | (For profile – saved destinations) |
+
+**Relationships**:
+- A **User** has many **Trips**.
+- A **Trip** has many **Stops** (ordered).
+- A **Stop** belongs to one **City** and one **Trip**.
+- A **Stop** has many **StopActivities**.
+- An **Activity** can be used in many StopActivities (many‑to‑many through stop_activities).
+- **Cities** can be pre‑populated from a curated dataset (e.g., GeoNames) with cost index and popularity.
+
+**Indexes**: Foreign keys, `(trip_id, order_index)` on stops, `(user_id, created_at)` on trips, `city_name` for search, etc.
+
+---
+
+### 4. Backend API Design (RESTful)
+We define endpoints for each feature. All endpoints (except login/signup and public share) require JWT authentication.
+
+| Endpoint | Method | Description | Request Body / Query Params |
+|----------|--------|-------------|-----------------------------|
+| **Auth** |
+| `/api/auth/register` | POST | User signup | `{ email, password, fullName }` |
+| `/api/auth/login` | POST | User login | `{ email, password }` returns JWT |
+| `/api/auth/refresh` | POST | Refresh token | `{ refreshToken }` |
+| `/api/auth/forgot-password` | POST | Send reset link | `{ email }` |
+| **Trips** |
+| `/api/trips` | GET | List user’s trips | Query: `?page=1&limit=10` |
+| `/api/trips` | POST | Create a new trip | `{ tripName, description, startDate, endDate, coverPhoto? }` |
+| `/api/trips/:id` | GET | Retrieve trip details (with stops and activities) | – |
+| `/api/trips/:id` | PUT | Update trip info | `{ tripName, description, dates, coverPhoto, isPublic }` |
+| `/api/trips/:id` | DELETE | Delete trip | – |
+| **Stops** |
+| `/api/trips/:tripId/stops` | POST | Add a stop | `{ cityId, startDate, endDate, notes, orderIndex? }` |
+| `/api/stops/:id` | PUT | Update stop | `{ cityId, dates, notes, orderIndex }` |
+| `/api/stops/:id` | DELETE | Remove stop | – |
+| **Activities** |
+| `/api/trips/:tripId/stops/:stopId/activities` | POST | Add activity to stop | `{ activityId, scheduledTime, cost, notes }` |
+| `/api/stop-activities/:id` | PUT | Update activity instance | `{ scheduledTime, cost, notes }` |
+| `/api/stop-activities/:id` | DELETE | Remove activity from stop | – |
+| **Search** |
+| `/api/cities/search` | GET | Search cities | Query: `q`, `country`, `limit` |
+| `/api/activities/search` | GET | Search activities | Query: `q`, `type`, `cityId`, `maxCost`, `maxDuration` |
+| **Budget** |
+| `/api/trips/:id/budget` | GET | Get budget breakdown (computed on‑the‑fly or cached) | – |
+| **Calendar/Timeline** |
+| `/api/trips/:id/timeline` | GET | Get all stops + activities flattened by date | – |
+| **Sharing** |
+| `/api/trips/:id/share` | POST | Generate/retrieve share token | `{ expiresIn? }` |
+| `/api/public/trip/:token` | GET | Public read‑only trip data | – |
+| **Profile** |
+| `/api/users/me` | GET/PUT | Get/update profile | `{ fullName, profilePic, languagePref }` |
+| `/api/users/me/saved-cities` | GET/POST/DELETE | Manage saved cities | – |
+| **Admin** |
+| `/api/admin/stats` | GET | Aggregated platform stats (admin only) | – |
+
+---
+
+### 5. Frontend Implementation
+We adopt a **mobile‑first responsive** design using React, Material‑UI (or Tailwind) for component consistency, and React Router for navigation.
+
+**State Management**:
+- Redux Toolkit for global state (user, current trip, search results).
+- RTK Query (or React Query) for data fetching, caching, and optimistic updates.
+- Local state for forms (react‑hook‑form).
+
+**Key Screens & Components**:
+
+1. **Login/Signup** – Form with validation; use JWT storage in `httpOnly` cookie or localStorage.
+2. **Dashboard** – Display greeting, upcoming trips (API call to recent trips), popular cities (pre‑fetched from static or cached endpoint), and a “Plan New Trip” button.
+3. **Create Trip** – Multi‑step form (trip name, dates, description, optional cover photo upload) with preview.
+4. **My Trips** – List of trip cards with edit, delete, and view buttons; sorting by date.
+5. **Itinerary Builder** – Drag‑and‑drop (react‑dnd) to reorder stops; add city via city search modal; for each stop, date pickers; add activities via activity search modal; inline editing of notes.
+6. **Itinerary View** – Two toggle modes: **Day‑wise Timeline** and **City‑grouped List**. Show activities with times and costs.
+7. **City Search** – Autocomplete input with debounce; results display country, cost index, popularity; “Add to Trip” button that opens a stop creation dialog.
+8. **Activity Search** – Filter by type, cost range, duration; card layout with image, description, add/remove toggle.
+9. **Trip Budget** – Pie/bar charts (Chart.js) showing transport, stay, activities, meals; average daily cost; highlight days where budget is exceeded (if user sets daily budget).
+10. **Calendar/Timeline** – A full‑calendar view (react‑big‑calendar) with events representing activities; drag‑to‑reschedule (updates backend on drop); expandable day details.
+11. **Shared View** – Read‑only public page accessible via `/shared/:token`; includes “Copy Trip” button that, when clicked, duplicates the itinerary into the user’s own trips (if logged in).
+12. **Profile/Settings** – Editable fields; saved destinations list; delete account with confirmation.
+13. **Admin Dashboard** – Only visible to admin users; shows user growth, trips created over time, top cities/activities, and user management.
+
+---
+
+### 6. Feature Implementation Details
+
+#### 6.1 Authentication & Security
+- Passwords hashed using bcrypt.
+- JWT with short expiration (15 min) and refresh token stored in an `httpOnly` secure cookie.
+- Role‑based access control: `admin` flag in users table.
+- Input sanitization and rate limiting.
+
+#### 6.2 Itinerary Builder & Data Consistency
+- When a trip’s `start_date` or `end_date` changes, the backend can optionally adjust stop dates proportionally (or warn the user).
+- Stop dates must be within the trip’s date range; enforced on the backend.
+- Reordering stops updates `order_index` and renumbers all stops in the trip.
+
+#### 6.3 Budget Computation
+- Budget is computed on‑demand from the database:
+  - **Transport**: can be estimated based on distance between stops (using external API like Google Maps, but for MVP we may use a default cost per km or allow user input). Instead, we store a `transport_cost` per stop or per trip? To keep it simple, we can have a separate `transport_estimate` per stop (or trip) that the user can enter, or compute from city cost index.
+  - **Accommodation**: could be estimated from city cost index and number of nights.
+  - **Activities**: sum of `cost` from `stop_activities`.
+  - **Meals**: estimated from city cost index * (number of days * meals per day).
+- These are just estimates; we can also allow users to override each category directly in the UI.
+- The budget endpoint returns a breakdown and highlights “over‑budget” days if the user sets a daily budget (stored in trip table).
+
+#### 6.4 Search Performance
+- PostgreSQL full‑text search with trigram indexes on city names and activity names.
+- For larger datasets, we can add Elasticsearch, but for hackathon scale, PG search is sufficient.
+- Filters (country, type, cost) are applied via SQL `WHERE` clauses.
+
+#### 6.5 Sharing Public Itinerary
+- When user toggles `is_public` or clicks “Generate Share Link”, a unique `share_token` (UUID) is generated and stored in the trips table.
+- The public endpoint `/api/public/trip/:token` returns the trip data **without** exposing user details or editing options.
+- “Copy Trip” – for authenticated users, a new trip is created by duplicating all stops and activities; the user becomes the owner.
+
+#### 6.6 Admin Analytics
+- Aggregated queries on the database (e.g., `COUNT(*) FROM trips GROUP BY DATE(created_at)`, top cities by stop count, top activities).
+- Provide this data via an admin API endpoint, and render charts on a protected admin page.
+
+---
+
+### 7. Data Flow Example: Creating a Trip
+1. User fills “Create Trip” form → POST `/api/trips` → backend inserts into `trips` → returns trip ID.
+2. User navigates to Itinerary Builder for that trip → GET `/api/trips/:id` fetches trip with stops and activities.
+3. User adds a stop → selects a city from search → POST `/api/trips/:id/stops` → backend inserts into `stops`, and if city does not exist, it can be created on‑the‑fly (but we pre‑populate cities).
+4. User adds an activity to that stop → POST `/api/trips/:id/stops/:stopId/activities` → inserts into `stop_activities`.
+5. User edits dates or reorders stops → PUT `/api/stops/:id` updates order and dates.
+6. User views budget → GET `/api/trips/:id/budget` → backend calculates and returns JSON.
+7. User shares trip → POST `/api/trips/:id/share` → generates token, sets `is_public=true`, returns shareable URL.
+
+---
+
+### 8. Tech Stack Recommendations
+| Layer | Technology |
+|-------|------------|
+| **Frontend** | React, TypeScript, Redux Toolkit, RTK Query, Material‑UI, React Hook Form, React Router, Chart.js, react‑big‑calendar, react‑dnd |
+| **Backend** | Node.js + Express (or Python Django with DRF) – both are valid; Node is lighter for hackathon |
+| **Database** | PostgreSQL (hosted on AWS RDS or Supabase) |
+| **ORM/Query Builder** | Prisma (TypeScript) or Sequelize / TypeORM |
+| **Authentication** | JWT + bcrypt; passport.js for strategies |
+| **File Storage** | AWS S3 / Cloudinary (for cover photos and activity images) |
+| **Caching** | Redis (optional for search caching and rate limiting) |
+| **Deployment** | Docker containers; orchestration via Kubernetes or simple Heroku/Vercel + Railway |
+| **CI/CD** | GitHub Actions for automated tests and deployment |
+
+---
+
+### 9. Development Phases (for Hackathon)
+1. **Phase 0 – Planning & Setup** (2 hours): Define DB schema, set up project repos, configure CI, choose hosting.
+2. **Phase 1 – Core Auth & Trip CRUD** (4 hours): User signup/login, create/list/view/edit/delete trips.
+3. **Phase 2 – Stops & Activities** (4 hours): Add stops, city search, activity search, add activities to stops, basic itinerary builder.
+4. **Phase 3 – Itinerary View & Budget** (3 hours): Display timeline/calendar, compute budget breakdown and charts.
+5. **Phase 4 – Sharing & Profile** (2 hours): Public view, copy trip, profile settings, saved cities.
+6. **Phase 5 – Polish & Admin** (2 hours): Responsive design, loading states, error handling, admin dashboard (optional).
+7. **Testing & Documentation** (1 hour): Write basic tests (Jest, Supertest), API documentation (Swagger/Postman).
+
+---
+
+### 10. Additional Considerations
+- **Scalability**: Use connection pooling, pagination for trip lists, and indexes to keep queries fast.
+- **Error Handling**: Unified error response format with proper HTTP status codes.
+- **Offline Support**: Not required for MVP, but we could use service workers for caching public itineraries.
+- **Accessibility**: Ensure semantic HTML, ARIA labels, and keyboard navigation.
+- **Data Seeding**: Pre‑load cities and activities from a CSV/JSON file to kickstart the app.
+
+
+Perfect! Your tech stack choices are **spot on** for a hackathon—and even for production. Here’s a refined alignment of the architecture with your confirmed tools, plus a few actionable tips to leverage their strengths.
+
+---
+
+## Updated Tech Stack & Deployment Strategy
+
+| Layer | Your Choice | Why It Works |
+|-------|-------------|--------------|
+| **Frontend** | React + TypeScript + Redux Toolkit + Material‑UI | Great for rapid component development and responsive UI. |
+| **Backend** | Node.js + Express | Lightweight, fast, and perfect for REST APIs. |
+| **Database** | **Supabase (PostgreSQL)** | Gives you a managed PostgreSQL instance **plus** built‑in authentication, real‑time subscriptions, and auto‑generated REST APIs—saves you from writing boilerplate auth/CRUD. |
+| **Caching** | Redis | Perfect for rate‑limiting, session caching, and speeding up city/activity search results. |
+| **Frontend Hosting** | **Vercel** | Seamless Git‑based deploys, automatic SSL, and edge functions if needed. |
+| **Backend Hosting** | **Railway** | Easy to deploy Node.js apps with environment variables, auto‑scaling, and a generous free tier. |
+
+---
+
+## How Supabase Simplifies Your Architecture
+
+1. **Authentication**  
+   Instead of rolling your own JWT + bcrypt, you can use Supabase Auth (built on GoTrue). It provides email/password login, signup, password reset, and session management out‑of‑the‑box.  
+   - Your frontend calls `supabase.auth.signUp()` / `signIn()`.  
+   - The Supabase client handles token refresh automatically.  
+   - Backend can still validate the JWT via Supabase’s `verify` method.
+
+2. **Database (PostgreSQL)**  
+   Your schema (users, trips, stops, etc.) maps 1:1 to Supabase tables.  
+   - **Row Level Security (RLS)** – you can enforce that users can only see/modify their own trips directly in the database, adding an extra security layer.  
+   - **Real‑time subscriptions** – if you want live updates when a shared itinerary is viewed or when activities are reordered, Supabase’s `realtime` feature is built‑in.
+
+3. **API Generation**  
+   Supabase auto‑generates REST endpoints for each table. For hackathon speed, you can even bypass Express for simple CRUD and only write custom endpoints (budget calculations, sharing, admin stats) in Node.js. But I’d recommend keeping your Express layer as an orchestration middleman to handle complex business logic and external API calls.
+
+---
+
+## Deployment Flow (Vercel + Railway)
+
+- **Vercel**  
+  - Host the React build (static files).  
+  - Environment variables: `REACT_APP_SUPABASE_URL`, `REACT_APP_SUPABASE_ANON_KEY`, `REACT_APP_BACKEND_URL`.  
+  - Deploy automatically on push to `main` branch.
+
+- **Railway**  
+  - Host your Node.js Express server.  
+  - Environment variables: `DATABASE_URL` (Supabase connection string), `REDIS_URL`, `JWT_SECRET` (if not using Supabase auth), `S3/CLOUDINARY` keys.  
+  - Railway gives you a public URL (e.g., `https://your-backend.railway.app`) which you set in the frontend’s API base URL.  
+  - For Redis, you can use Railway’s Redis plugin or a separate service like Upstash (free tier).
+
+- **Supabase**  
+  - No deployment needed; just create your project, run the SQL schema, and enable RLS.  
+  - Store your connection string in Railway’s environment variables.
+
+---
+
+## Slight Adjustment: Authentication Strategy
+
+Since you’re using Supabase, I recommend:
+
+- **Frontend**: Use `@supabase/supabase-js` for login/signup. Store the session in the client (Supabase handles that).
+- **Backend**: Still protect your Express routes. In your middleware, decode the JWT from the `Authorization` header using Supabase’s public key (or the `supabase-js` library) to get the user ID. This way, your Express APIs are stateless and secure.
+- This eliminates the need to store password hashes in your own DB—you can rely on Supabase Auth’s `auth.users` table.
+
+---
+
+## What Stays Unchanged
+
+- **Database schema** (users, trips, stops, etc.) – still perfectly valid.  
+- **API endpoints** – still the same design; your Express routes will call Supabase queries using the `supabase-js` client or the Postgres SQL client (e.g., `pg` + `node-postgres`).  
+- **Redis** – still used for caching search results and rate limiting. You can host Redis on Railway or Upstash.  
+- **All 13 features** – still implemented as described.
+
+---
