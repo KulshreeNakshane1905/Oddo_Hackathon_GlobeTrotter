@@ -7,6 +7,8 @@ import { getSupabaseAdmin } from '../config/supabase';
 import { ApiError } from '../utils/ApiError';
 import { ApiResponse } from '../utils/ApiResponse';
 import { logger } from '../utils/logger';
+import { env } from '../config/env';
+import jwt from 'jsonwebtoken';
 
 // Augment Express Request with user info
 export interface AuthenticatedRequest extends Request {
@@ -39,22 +41,39 @@ export async function authMiddleware(
       return;
     }
 
-    // Verify token using Supabase Admin client
-    const supabase = getSupabaseAdmin();
-    const { data, error } = await (supabase.auth as any).getUser(token);
+    const isLocalMock = env.SUPABASE_URL.includes('localhost');
+    let userData: any = null;
 
-    if (error || !data.user) {
-      logger.warn(`Auth failed: ${error?.message || 'No user found'}`);
+    if (isLocalMock) {
+      // Local mock JWT verification
+      try {
+        const decoded = jwt.verify(token, env.JWT_SECRET || 'secret') as any;
+        userData = { id: decoded.id, email: decoded.email, user_metadata: { is_admin: decoded.is_admin } };
+      } catch (e) {
+        // Fall through to error response below
+      }
+    } else {
+      // Verify token using Supabase Admin client
+      const supabase = getSupabaseAdmin();
+      const { data, error } = await (supabase.auth as any).getUser(token);
+      if (!error && data?.user) {
+        userData = data.user;
+      } else {
+        logger.warn(`Auth failed: ${error?.message || 'No user found'}`);
+      }
+    }
+
+    if (!userData) {
       ApiResponse.error(res, 401, 'Invalid or expired token', 'UNAUTHORIZED');
       return;
     }
 
     // Attach user info to request
-    req.userId = data.user.id;
-    req.userEmail = data.user.email;
+    req.userId = userData.id;
+    req.userEmail = userData.email;
 
     // Check admin status from user metadata or database
-    req.isAdmin = data.user.user_metadata?.is_admin === true;
+    req.isAdmin = userData.user_metadata?.is_admin === true;
 
     next();
   } catch (err) {
@@ -77,12 +96,24 @@ export async function optionalAuthMiddleware(
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.split(' ')[1];
       if (token) {
-        const supabase = getSupabaseAdmin();
-        const { data } = await (supabase.auth as any).getUser(token);
-        if (data.user) {
-          req.userId = data.user.id;
-          req.userEmail = data.user.email;
-          req.isAdmin = data.user.user_metadata?.is_admin === true;
+        const isLocalMock = env.SUPABASE_URL.includes('localhost');
+        if (isLocalMock) {
+          try {
+            const decoded = jwt.verify(token, env.JWT_SECRET || 'secret') as any;
+            req.userId = decoded.id;
+            req.userEmail = decoded.email;
+            req.isAdmin = decoded.is_admin === true;
+          } catch (e) {
+            // silent fail
+          }
+        } else {
+          const supabase = getSupabaseAdmin();
+          const { data } = await (supabase.auth as any).getUser(token);
+          if (data.user) {
+            req.userId = data.user.id;
+            req.userEmail = data.user.email;
+            req.isAdmin = data.user.user_metadata?.is_admin === true;
+          }
         }
       }
     }

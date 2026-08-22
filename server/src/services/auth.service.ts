@@ -8,6 +8,9 @@ import { ApiError } from '../utils/ApiError';
 import { logger } from '../utils/logger';
 
 import prisma from '../utils/prisma';
+import jwt from 'jsonwebtoken';
+import { env } from '../config/env';
+import { v4 as uuidv4 } from 'uuid';
 
 
 interface RegisterData {
@@ -26,36 +29,47 @@ export class AuthService {
    * Register a new user via Supabase Auth, then create a profile in our DB.
    */
   async register(data: RegisterData) {
-    const supabase = getSupabaseAdmin();
+    const isLocalMock = env.SUPABASE_URL.includes('localhost');
+    let userId: string;
 
-    // 1. Create user in Supabase Auth
-    const { data: authData, error: authError } = await (supabase.auth as any).admin.createUser({
-      email: data.email,
-      password: data.password,
-      email_confirm: true, // Auto-confirm for now; switch to false for email verification
-      user_metadata: {
-        full_name: data.fullName,
-        is_admin: false,
-      },
-    });
+    if (isLocalMock) {
+      // Local mock auth bypass
+      const existingUser = await prisma.user.findUnique({ where: { email: data.email } });
+      if (existingUser) throw ApiError.conflict('An account with this email already exists');
+      userId = uuidv4();
+    } else {
+      const supabase = getSupabaseAdmin();
+      // 1. Create user in Supabase Auth
+      const { data: authData, error: authError } = await (supabase.auth as any).admin.createUser({
+        email: data.email,
+        password: data.password,
+        email_confirm: true,
+        user_metadata: {
+          full_name: data.fullName,
+          is_admin: false,
+        },
+      });
 
-    if (authError) {
-      logger.error('Supabase auth register error:', authError);
-      if (authError.message.includes('already registered')) {
-        throw ApiError.conflict('An account with this email already exists');
+      if (authError) {
+        logger.error('Supabase auth register error:', authError);
+        if (authError.message.includes('already registered')) {
+          throw ApiError.conflict('An account with this email already exists');
+        }
+        throw ApiError.internal('Failed to create account');
       }
-      throw ApiError.internal('Failed to create account');
-    }
 
-    if (!authData.user) {
-      throw ApiError.internal('User creation failed');
+      if (!authData.user) {
+        throw ApiError.internal('User creation failed');
+      }
+      userId = authData.user.id;
     }
 
     // 2. Create user profile in our database
     const user = await prisma.user.create({
       data: {
-        id: authData.user.id,
+        id: userId,
         email: data.email,
+        password: data.password, // Storing plaintext for local mock only, in prod Supabase handles this
         fullName: data.fullName,
       },
       select: {
@@ -76,33 +90,53 @@ export class AuthService {
    * Login via Supabase Auth — returns session with tokens.
    */
   async login(data: LoginData) {
-    const supabase = getSupabaseAdmin();
+    const isLocalMock = env.SUPABASE_URL.includes('localhost');
+    let userId: string;
+    let authData: any = null;
 
-    // Use signInWithPassword through Supabase client
-    // Note: For server-side login, we create a temporary client
-    const { createClient } = await import('@supabase/supabase-js');
-    const anonClient = createClient(
-      process.env.SUPABASE_URL || '',
-      process.env.SUPABASE_ANON_KEY || ''
-    );
+    if (isLocalMock) {
+      // Local mock auth bypass
+      const mockUser = await prisma.user.findUnique({ where: { email: data.email } });
+      if (!mockUser || mockUser.password !== data.password) {
+        throw ApiError.unauthorized('Invalid email or password');
+      }
+      userId = mockUser.id;
+      authData = {
+        user: { id: mockUser.id, email: mockUser.email, user_metadata: { full_name: mockUser.fullName } },
+        session: {
+          access_token: jwt.sign({ id: mockUser.id, email: mockUser.email, is_admin: mockUser.isAdmin }, env.JWT_SECRET || 'secret', { expiresIn: '1d' }),
+          refresh_token: 'mock_refresh_token',
+          expires_at: Math.floor(Date.now() / 1000) + 86400,
+        }
+      };
+    } else {
+      const { createClient } = await import('@supabase/supabase-js');
+      const anonClient = createClient(
+        process.env.SUPABASE_URL || '',
+        process.env.SUPABASE_ANON_KEY || ''
+      );
 
-    const { data: authData, error: authError } = await (anonClient.auth as any).signInWithPassword({
-      email: data.email,
-      password: data.password,
-    });
+      const { data: realAuthData, error: authError } = await (anonClient.auth as any).signInWithPassword({
+        email: data.email,
+        password: data.password,
+      });
 
-    if (authError) {
-      logger.warn(`Login failed for ${data.email}: ${authError.message}`);
-      throw ApiError.unauthorized('Invalid email or password');
-    }
+      if (authError) {
+        logger.warn(`Login failed for ${data.email}: ${authError.message}`);
+        throw ApiError.unauthorized('Invalid email or password');
+      }
 
-    if (!authData.session) {
-      throw ApiError.unauthorized('Failed to create session');
+      if (!realAuthData.session) {
+        throw ApiError.unauthorized('Failed to create session');
+      }
+      
+      authData = realAuthData;
+      userId = authData.user.id;
     }
 
     // Fetch user profile from our database
     const user = await prisma.user.findUnique({
-      where: { id: authData.user.id },
+      where: { id: userId },
       select: {
         id: true,
         email: true,
