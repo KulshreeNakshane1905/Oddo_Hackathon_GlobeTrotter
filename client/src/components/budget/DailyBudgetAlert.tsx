@@ -14,9 +14,9 @@ import {
   useTheme,
   alpha,
 } from '@mui/material';
-import {  } from '@mui/icons-material';
-import {  } from '@mui/icons-material';
-import {  } from '@mui/icons-material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
 import type { DailyBudget } from '../../types/budget.types';
 import { formatCurrency } from '../../utils/formatters';
 
@@ -47,7 +47,7 @@ const DailyBudgetAlert: React.FC<DailyBudgetAlertProps> = ({
     return (
       <Alert
         severity="success"
-        icon={<CheckCircleOutlineIcon />}
+        icon={<CheckCircleOutlinedIcon />}
         sx={{
           borderRadius: 2,
           '& .MuiAlert-icon': { alignItems: 'center' },
