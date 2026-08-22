@@ -8,6 +8,7 @@ export const usersApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getMe: builder.query<User, void>({
       query: () => '/users/me',
+      transformResponse: (response: { data: User }) => response.data,
       providesTags: ['User'],
     }),
     updateMe: builder.mutation<User, Partial<User>>({
@@ -16,6 +17,7 @@ export const usersApi = apiSlice.injectEndpoints({
         method: 'PUT',
         body: data,
       }),
+      transformResponse: (response: { data: User }) => response.data,
       invalidatesTags: ['User'],
     }),
     deleteMe: builder.mutation<void, void>({
@@ -26,6 +28,7 @@ export const usersApi = apiSlice.injectEndpoints({
     }),
     getSavedCities: builder.query<SavedCity[], void>({
       query: () => '/users/me/saved-cities',
+      transformResponse: (response: { data: SavedCity[] }) => response.data,
       providesTags: ['SavedCities'],
     }),
     saveCity: builder.mutation<SavedCity, string>({

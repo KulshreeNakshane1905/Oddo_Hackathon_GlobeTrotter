@@ -17,7 +17,12 @@ export function validate(schema: ZodSchema, target: ValidationTarget = 'body') {
     try {
       const parsed = schema.parse(req[target]);
       // Replace the target with parsed (cleaned) data
-      (req as any)[target] = parsed;
+      Object.defineProperty(req, target, {
+        value: parsed,
+        writable: true,
+        enumerable: true,
+        configurable: true
+      });
       next();
     } catch (err) {
       if (err instanceof ZodError) {

@@ -260,6 +260,7 @@ export default function CreateTripForm({ onSubmit, isLoading }: CreateTripFormPr
                 render={({ field }) => (
                   <TextField
                     {...field}
+                    value={field.value ?? ''}
                     id="trip-daily-budget-input"
                     label="Daily Budget"
                     type="number"

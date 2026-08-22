@@ -41,6 +41,15 @@ router.use('/trips/:id', budgetRoutes);                         // GET /budget, 
 router.use('/trips/:id/share', tripShareRouter);                // POST /, DELETE /
 router.use('/public/trip', publicTripRouter);                   // GET /:token, POST /:token/copy
 
+// API Base Root Route
+router.get('/', (_req, res) => {
+  res.json({
+    success: true,
+    message: 'Welcome to the GlobalTrotters API',
+    version: '1.0.0'
+  });
+});
+
 // Health check
 router.get('/health', (_req, res) => {
   res.json({
