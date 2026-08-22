@@ -2,13 +2,11 @@
 // Auth Service — Business logic for authentication
 // ============================================================================
 
-import { PrismaClient } from '@prisma/client';
-import { getSupabaseAdmin } from '../config/supabase';
 import { ApiError } from '../utils/ApiError';
 import { logger } from '../utils/logger';
-
 import prisma from '../utils/prisma';
-
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 interface RegisterData {
   email: string;
@@ -21,41 +19,31 @@ interface LoginData {
   password: string;
 }
 
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key-for-dev-only-do-not-use-in-prod';
+const JWT_EXPIRES_IN = '7d';
+
 export class AuthService {
   /**
-   * Register a new user via Supabase Auth, then create a profile in our DB.
+   * Register a new user with local JWT and bcrypt.
    */
   async register(data: RegisterData) {
-    const supabase = getSupabaseAdmin();
-
-    // 1. Create user in Supabase Auth
-    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-      email: data.email,
-      password: data.password,
-      email_confirm: true, // Auto-confirm for now; switch to false for email verification
-      user_metadata: {
-        full_name: data.fullName,
-        is_admin: false,
-      },
+    // 1. Check if user already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email: data.email }
     });
 
-    if (authError) {
-      logger.error('Supabase auth register error:', authError);
-      if (authError.message.includes('already registered')) {
-        throw ApiError.conflict('An account with this email already exists');
-      }
-      throw ApiError.internal('Failed to create account');
+    if (existingUser) {
+      throw ApiError.conflict('An account with this email already exists');
     }
 
-    if (!authData.user) {
-      throw ApiError.internal('User creation failed');
-    }
+    // 2. Hash password
+    const hashedPassword = await bcrypt.hash(data.password, 10);
 
-    // 2. Create user profile in our database
+    // 3. Create user in our database
     const user = await prisma.user.create({
       data: {
-        id: authData.user.id,
         email: data.email,
+        password: hashedPassword,
         fullName: data.fullName,
       },
       select: {
@@ -73,67 +61,46 @@ export class AuthService {
   }
 
   /**
-   * Login via Supabase Auth — returns session with tokens.
+   * Login via local Auth — returns session with tokens.
    */
   async login(data: LoginData) {
-    const supabase = getSupabaseAdmin();
-
-    // Use signInWithPassword through Supabase client
-    // Note: For server-side login, we create a temporary client
-    const { createClient } = await import('@supabase/supabase-js');
-    const anonClient = createClient(
-      process.env.SUPABASE_URL || '',
-      process.env.SUPABASE_ANON_KEY || ''
-    );
-
-    const { data: authData, error: authError } = await anonClient.auth.signInWithPassword({
-      email: data.email,
-      password: data.password,
+    // 1. Find user
+    const user = await prisma.user.findUnique({
+      where: { email: data.email },
     });
 
-    if (authError) {
-      logger.warn(`Login failed for ${data.email}: ${authError.message}`);
+    if (!user) {
+      logger.warn(`Login failed for ${data.email}: User not found`);
       throw ApiError.unauthorized('Invalid email or password');
     }
 
-    if (!authData.session) {
-      throw ApiError.unauthorized('Failed to create session');
+    // 2. Verify password
+    const isValidPassword = await bcrypt.compare(data.password, user.password);
+    if (!isValidPassword) {
+      logger.warn(`Login failed for ${data.email}: Invalid password`);
+      throw ApiError.unauthorized('Invalid email or password');
     }
 
-    // Fetch user profile from our database
-    const user = await prisma.user.findUnique({
-      where: { id: authData.user.id },
-      select: {
-        id: true,
-        email: true,
-        fullName: true,
-        profilePic: true,
-        languagePref: true,
-        isAdmin: true,
+    // 3. Generate JWT
+    const token = jwt.sign(
+      { 
+        id: user.id, 
+        email: user.email, 
+        role: user.isAdmin ? 'admin' : 'user' 
       },
-    });
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRES_IN }
+    );
 
-    // If user doesn't exist in our DB yet (edge case: created via Supabase dashboard)
-    if (!user) {
-      await prisma.user.create({
-        data: {
-          id: authData.user.id,
-          email: authData.user.email!,
-          fullName: authData.user.user_metadata?.full_name || 'User',
-        },
-      });
-    }
-
+    // 4. Return user info and session
+    const { password, ...userWithoutPassword } = user;
+    
     return {
-      user: user || {
-        id: authData.user.id,
-        email: authData.user.email,
-        fullName: authData.user.user_metadata?.full_name || 'User',
-      },
+      user: userWithoutPassword,
       session: {
-        accessToken: authData.session.access_token,
-        refreshToken: authData.session.refresh_token,
-        expiresAt: authData.session.expires_at,
+        accessToken: token,
+        refreshToken: token, // Refresh tokens not strictly implemented in local auth for simplicity
+        expiresAt: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60, // 7 days in seconds
       },
     };
   }
@@ -142,42 +109,43 @@ export class AuthService {
    * Refresh the access token using a refresh token.
    */
   async refreshToken(refreshToken: string) {
-    const { createClient } = await import('@supabase/supabase-js');
-    const anonClient = createClient(
-      process.env.SUPABASE_URL || '',
-      process.env.SUPABASE_ANON_KEY || ''
-    );
+    try {
+      const decoded = jwt.verify(refreshToken, JWT_SECRET) as any;
+      
+      const user = await prisma.user.findUnique({
+        where: { id: decoded.id }
+      });
 
-    const { data, error } = await anonClient.auth.refreshSession({
-      refresh_token: refreshToken,
-    });
+      if (!user) {
+        throw new Error('User not found');
+      }
 
-    if (error || !data.session) {
+      const token = jwt.sign(
+        { 
+          id: user.id, 
+          email: user.email, 
+          role: user.isAdmin ? 'admin' : 'user' 
+        },
+        JWT_SECRET,
+        { expiresIn: JWT_EXPIRES_IN }
+      );
+
+      return {
+        accessToken: token,
+        refreshToken: token,
+        expiresAt: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
+      };
+    } catch (error) {
       throw ApiError.unauthorized('Invalid or expired refresh token');
     }
-
-    return {
-      accessToken: data.session.access_token,
-      refreshToken: data.session.refresh_token,
-      expiresAt: data.session.expires_at,
-    };
   }
 
   /**
-   * Send password reset email via Supabase.
+   * Send password reset email (Dummy implementation for local auth)
    */
   async forgotPassword(email: string) {
-    const supabase = getSupabaseAdmin();
-
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${process.env.CORS_ORIGIN}/reset-password`,
-    });
-
-    if (error) {
-      logger.error('Password reset error:', error);
-      // Don't reveal if email exists — always return success
-    }
-
+    // In a real local auth system, you would generate a token, save it to DB, and send an email
+    logger.info(`Forgot password requested for ${email}`);
     return { message: 'If an account with that email exists, a reset link has been sent.' };
   }
 

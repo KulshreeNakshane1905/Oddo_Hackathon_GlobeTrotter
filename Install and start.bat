@@ -3,28 +3,30 @@ echo ========================================================
 echo   GlobalTrotters - Installation and First Time Setup
 echo ========================================================
 echo.
-echo Make sure you have added your actual Supabase credentials 
-echo to both server/.env and client/.env before proceeding!
-echo.
-pause
+echo Setting up local database and servers...
 echo.
 
-echo [1/3] Installing Client Dependencies...
+echo [1/4] Starting Local Database (PostgreSQL)...
+call .\start_postgres.bat
+echo.
+
+echo [2/4] Installing Client Dependencies...
 cd client
 call npm install
 cd ..
-
 echo.
-echo [2/3] Installing Server Dependencies...
+
+echo [3/4] Installing Server Dependencies...
 cd server
 call npm install
-
 echo.
-echo [3/3] Generating Prisma Client...
+
+echo [4/4] Setting up Database schema...
 call npx prisma generate
+call npx prisma migrate deploy
 cd ..
-
 echo.
+
 echo ========================================================
 echo   Setup Complete! Starting both servers...
 echo ========================================================

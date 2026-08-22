@@ -1,7 +1,11 @@
 @echo off
 echo ========================================================
-echo   Starting GlobalTrotters Application...
+echo   GlobalTrotters - Starting Servers...
 echo ========================================================
+echo.
+
+echo Starting Local Database (PostgreSQL)...
+call .\start_postgres.bat
 echo.
 
 start "GlobalTrotters Client" cmd /k "cd client && npm run dev"
