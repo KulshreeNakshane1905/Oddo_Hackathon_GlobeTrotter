@@ -13,6 +13,7 @@ import {
   stopActivityDirectRouter,
   activitySearchRouter,
 } from './activities.routes';
+import budgetRoutes from './budget.routes';
 
 const router = Router();
 
@@ -27,6 +28,9 @@ router.use('/stops', stopsDirectRoutes);                  // PUT /:id, DELETE /:
 router.use('/stops/:stopId/activities', stopActivitiesRouter); // POST /
 router.use('/stop-activities', stopActivityDirectRouter);      // PUT /:id, DELETE /:id
 router.use('/activities', activitySearchRouter);                // GET /search
+
+// Phase 4 — Budget & Timeline
+router.use('/trips/:id', budgetRoutes);                         // GET /budget, GET /timeline
 
 // Health check
 router.get('/health', (_req, res) => {

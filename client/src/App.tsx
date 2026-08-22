@@ -26,6 +26,8 @@ import DashboardPage from './pages/DashboardPage';
 import MyTripsPage from './pages/MyTripsPage';
 import CreateTripPage from './pages/CreateTripPage';
 import ItineraryPage from './pages/ItineraryPage';
+import BudgetPage from './pages/BudgetPage';
+import CalendarPage from './pages/CalendarPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 function AppContent() {
@@ -78,6 +80,22 @@ function AppContent() {
               element={
                 <ProtectedRoute>
                   <ItineraryPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/trips/:id/budget"
+              element={
+                <ProtectedRoute>
+                  <BudgetPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/trips/:id/calendar"
+              element={
+                <ProtectedRoute>
+                  <CalendarPage />
                 </ProtectedRoute>
               }
             />
