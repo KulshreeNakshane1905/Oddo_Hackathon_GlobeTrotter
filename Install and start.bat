@@ -23,7 +23,7 @@ echo.
 
 echo [4/4] Setting up Database schema...
 call npx prisma generate
-call npx prisma migrate deploy
+call npx prisma db push
 cd ..
 echo.
 
