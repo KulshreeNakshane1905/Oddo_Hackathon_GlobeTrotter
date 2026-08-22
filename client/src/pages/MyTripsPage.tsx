@@ -1,91 +1,68 @@
-// ============================================================================
-// MyTripsPage — List all user's trips with sort/filter and pagination
-// ============================================================================
-
 import { useState } from 'react';
 import {
   Box,
   Typography,
   Button,
-  ToggleButtonGroup,
-  ToggleButton,
-  MenuItem,
   TextField,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
+  InputAdornment,
+  Card,
+  CardMedia,
+  CardContent,
   useTheme,
 } from '@mui/material';
-import { Add, Sort as SortIcon } from '@mui/icons-material';
+import { Search, FilterList, Sort } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { useGetTripsQuery, useDeleteTripMutation } from '../store/api/tripsApi';
-import { showSnackbar } from '../store/slices/uiSlice';
-import TripList from '../components/trips/TripList';
-import type { Trip } from '../types/trip.types';
-import { keyframes } from '@emotion/react';
-
-const fadeIn = keyframes`
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
-`;
-
-type SortField = 'createdAt' | 'startDate' | 'tripName';
-type SortOrder = 'asc' | 'desc';
+import { useGetTripsQuery } from '../store/api/tripsApi';
 
 export default function MyTripsPage() {
   const theme = useTheme();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
+  
+  // For simplicity we just load the first page of trips.
+  // In a real scenario we might load all and categorize locally, or fetch categorized.
+  const { data, isLoading } = useGetTripsQuery({ limit: 50 });
 
-  // ── Local state ─────────────────────────────────────────────────────────
-  const [page, setPage] = useState(1);
-  const [sort, setSort] = useState<SortField>('createdAt');
-  const [order, setOrder] = useState<SortOrder>('desc');
-  const [deleteTarget, setDeleteTarget] = useState<Trip | null>(null);
+  const renderTripCard = (trip: any) => (
+    <Card
+      key={trip.id}
+      onClick={() => navigate(`/trips/${trip.id}`)}
+      sx={{
+        display: 'flex',
+        mb: 2,
+        borderRadius: 2,
+        border: `1px solid ${theme.palette.divider}`,
+        boxShadow: theme.shadows[1],
+        cursor: 'pointer',
+        '&:hover': { transform: 'translateX(4px)', transition: 'all 0.2s' }
+      }}
+    >
+      <CardMedia
+        component="img"
+        sx={{ width: 200 }}
+        image={'https://images.unsplash.com/photo-1501785888041-af3ef285b470'}
+        alt={trip.tripName}
+      />
+      <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <Typography variant="h6" sx={{ fontWeight: 700 }}>
+          {trip.tripName}
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          {new Date(trip.startDate).toLocaleDateString()} - {new Date(trip.endDate).toLocaleDateString()}
+        </Typography>
+        <Typography variant="body2" sx={{ mt: 1 }}>
+          {trip.description || "Short overview of the trip..."}
+        </Typography>
+      </CardContent>
+    </Card>
+  );
 
-  // ── API hooks ───────────────────────────────────────────────────────────
-  const { data, isLoading } = useGetTripsQuery({
-    page,
-    limit: 9,
-    sort,
-    order,
-  });
-
-  const [deleteTrip, { isLoading: isDeleting }] = useDeleteTripMutation();
-
-  // ── Handlers ────────────────────────────────────────────────────────────
-  const handleSortChange = (newSort: SortField) => {
-    setSort(newSort);
-    setPage(1); // Reset to page 1 on sort change
-  };
-
-  const handleOrderToggle = () => {
-    setOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
-    setPage(1);
-  };
-
-  const handleEdit = (trip: Trip) => {
-    navigate(`/trips/${trip.id}`);
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!deleteTarget) return;
-    try {
-      await deleteTrip(deleteTarget.id).unwrap();
-      dispatch(
-        showSnackbar({ message: 'Trip deleted successfully', severity: 'success' })
-      );
-    } catch {
-      dispatch(
-        showSnackbar({ message: 'Failed to delete trip', severity: 'error' })
-      );
-    } finally {
-      setDeleteTarget(null);
-    }
-  };
+  const trips = data?.trips || [];
+  
+  // Basic categorization based on date
+  const now = new Date();
+  const ongoing = trips.filter(t => new Date(t.startDate) <= now && new Date(t.endDate) >= now);
+  const upcoming = trips.filter(t => new Date(t.startDate) > now);
+  const completed = trips.filter(t => new Date(t.endDate) < now);
 
   return (
     <Box
@@ -93,118 +70,72 @@ export default function MyTripsPage() {
         p: { xs: 2, sm: 3, md: 4 },
         maxWidth: 1200,
         mx: 'auto',
-        animation: `${fadeIn} 0.5s ease-out`,
       }}
     >
-      {/* Header */}
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: { xs: 'column', sm: 'row' },
-          alignItems: { sm: 'center' },
-          justifyContent: 'space-between',
-          gap: 2,
-          mb: 4,
-        }}
-      >
-        <Box>
-          <Typography variant="h3" sx={{ fontWeight: 800 }}>
-            My Trips
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            {data?.meta?.total
-              ? `${data.meta.total} trip${data.meta.total === 1 ? '' : 's'}`
-              : 'Manage your travel plans'}
-          </Typography>
-        </Box>
-        <Button
-          variant="contained"
-          startIcon={<Add />}
-          onClick={() => navigate('/trips/new')}
-          sx={{ flexShrink: 0, px: 3 }}
-        >
-          New Trip
-        </Button>
-      </Box>
+      <Typography variant="h4" sx={{ fontWeight: 800, mb: 4 }}>
+        My Trips
+      </Typography>
 
-      {/* Sort controls */}
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 2,
-          mb: 3,
-          flexWrap: 'wrap',
+      {/* Toolbar */}
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          flexDirection: { xs: 'column', md: 'row' },
+          gap: 2, 
+          mb: 5 
         }}
       >
-        <SortIcon sx={{ color: 'text.secondary' }} />
         <TextField
-          select
+          placeholder="Search bar ......"
+          variant="outlined"
           size="small"
-          value={sort}
-          onChange={(e) => handleSortChange(e.target.value as SortField)}
-          sx={{ minWidth: 160 }}
-        >
-          <MenuItem value="createdAt">Date Created</MenuItem>
-          <MenuItem value="startDate">Start Date</MenuItem>
-          <MenuItem value="tripName">Name</MenuItem>
-        </TextField>
-        <ToggleButtonGroup
-          size="small"
-          value={order}
-          exclusive
-          onChange={handleOrderToggle}
-        >
-          <ToggleButton value="desc" aria-label="descending">
-            Newest
-          </ToggleButton>
-          <ToggleButton value="asc" aria-label="ascending">
-            Oldest
-          </ToggleButton>
-        </ToggleButtonGroup>
+          sx={{ flexGrow: 1, bgcolor: theme.palette.background.paper }}
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search />
+                </InputAdornment>
+              ),
+            }
+          }}
+        />
+        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+          <Button variant="outlined" sx={{ bgcolor: theme.palette.background.paper, color: 'text.primary', borderColor: 'divider' }}>
+            Group by
+          </Button>
+          <Button variant="outlined" startIcon={<FilterList />} sx={{ bgcolor: theme.palette.background.paper, color: 'text.primary', borderColor: 'divider' }}>
+            Filter
+          </Button>
+          <Button variant="outlined" startIcon={<Sort />} sx={{ bgcolor: theme.palette.background.paper, color: 'text.primary', borderColor: 'divider' }}>
+            Sort by...
+          </Button>
+        </Box>
       </Box>
 
-      {/* Trip list */}
-      <TripList
-        trips={data?.trips || []}
-        meta={data?.meta}
-        isLoading={isLoading}
-        page={page}
-        onPageChange={setPage}
-        onEdit={handleEdit}
-        onDelete={setDeleteTarget}
-      />
+      {isLoading ? (
+        <Typography>Loading trips...</Typography>
+      ) : (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {/* Ongoing Section */}
+          <Box>
+            <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>Ongoing</Typography>
+            {ongoing.length > 0 ? ongoing.map(renderTripCard) : <Typography color="text.secondary">No ongoing trips.</Typography>}
+          </Box>
 
-      {/* Delete confirmation dialog */}
-      <Dialog
-        open={!!deleteTarget}
-        onClose={() => setDeleteTarget(null)}
-        maxWidth="xs"
-        fullWidth
-      >
-        <DialogTitle sx={{ fontWeight: 700 }}>Delete Trip</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Are you sure you want to delete{' '}
-            <strong>{deleteTarget?.tripName}</strong>? This will permanently
-            remove all stops, activities, and budget data associated with this
-            trip. This action cannot be undone.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setDeleteTarget(null)} disabled={isDeleting}>
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            color="error"
-            onClick={handleDeleteConfirm}
-            disabled={isDeleting}
-          >
-            {isDeleting ? 'Deleting...' : 'Delete'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+          {/* Upcoming Section */}
+          <Box>
+            <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>Up-coming</Typography>
+            {upcoming.length > 0 ? upcoming.map(renderTripCard) : <Typography color="text.secondary">No upcoming trips.</Typography>}
+          </Box>
+
+          {/* Completed Section */}
+          <Box>
+            <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>Completed</Typography>
+            {completed.length > 0 ? completed.map(renderTripCard) : <Typography color="text.secondary">No completed trips.</Typography>}
+          </Box>
+        </Box>
+      )}
     </Box>
   );
 }

@@ -1,188 +1,162 @@
-// ============================================================================
-// CalendarPage — Calendar view for a trip's activities and stops
-// ============================================================================
-
-import React, { useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import {
   Box,
-  Container,
   Typography,
-  Card,
-  CardContent,
+  TextField,
+  InputAdornment,
+  Button,
   IconButton,
-  Breadcrumbs,
-  Link,
-  Skeleton,
   useTheme,
-  alpha,
 } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
-import { useGetTripByIdQuery } from '../store/api/tripsApi';
-import { useGetTripTimelineQuery } from '../store/api/budgetApi';
-import { useUpdateStopActivityMutation } from '../store/api/activitiesApi';
-import { useDispatch } from 'react-redux';
-import { showSnackbar } from '../store/slices/uiSlice';
-import TripCalendar from '../components/calendar/TripCalendar';
-import { formatDateRange } from '../utils/formatters';
+import { Search, FilterList, Sort, ArrowBack, ArrowForward } from '@mui/icons-material';
 
-const CalendarPage: React.FC = () => {
-  const { id: tripId } = useParams<{ id: string }>();
-  const navigate = useNavigate();
+export default function CalendarPage() {
   const theme = useTheme();
-  const dispatch = useDispatch();
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const { data: trip } = useGetTripByIdQuery(tripId!, { skip: !tripId });
-  const {
-    data: events,
-    isLoading,
-    error,
-  } = useGetTripTimelineQuery(tripId!, { skip: !tripId });
+  // 7 columns
+  const daysOfWeek = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
-  const [updateStopActivity] = useUpdateStopActivityMutation();
-
-  // ── Drag-to-reschedule handler ────────────────────────────────────
-  const handleEventDrop = useCallback(
-    async (eventId: string, newStart: Date, _newEnd: Date) => {
-      // Only update activities (stops can't be dragged)
-      // eventId for activities is the StopActivity ID
-      if (eventId.startsWith('stop-')) return;
-
-      try {
-        await updateStopActivity({
-          id: eventId,
-          tripId: tripId!,
-          data: { scheduledTime: newStart.toISOString() },
-        }).unwrap();
-
-        dispatch(
-          showSnackbar({
-            message: 'Activity rescheduled successfully',
-            severity: 'success',
-          })
-        );
-      } catch {
-        dispatch(
-          showSnackbar({
-            message: 'Failed to reschedule activity',
-            severity: 'error',
-          })
-        );
-      }
-    },
-    [updateStopActivity, dispatch, tripId]
-  );
-
-  if (!tripId) {
-    return null;
-  }
+  // A 5x7 grid to mock January 2024
+  // 1 starts on Monday (idx 1). 
+  // Let's just create an array of 31 days and pad the start.
+  const calendarDays = Array.from({ length: 35 }, (_, i) => {
+    const date = i - 0; // Starts from 1 at index 1
+    if (date < 1 || date > 31) return null;
+    return date;
+  });
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4, pb: 8 }}>
-      {/* ── Header ─────────────────────────────────────────────────────── */}
-      <Box sx={{ mb: 4 }}>
-        <Breadcrumbs sx={{ mb: 2 }}>
-          <Link
-            component="button"
-            underline="hover"
-            color="inherit"
-            onClick={() => navigate('/trips')}
-            sx={{ cursor: 'pointer' }}
-          >
-            My Trips
-          </Link>
-          <Link
-            component="button"
-            underline="hover"
-            color="inherit"
-            onClick={() => navigate(`/trips/${tripId}`)}
-            sx={{ cursor: 'pointer' }}
-          >
-            {trip?.tripName || 'Trip'}
-          </Link>
-          <Typography color="text.primary" sx={{ fontWeight: 600 }}>
-            Calendar
-          </Typography>
-        </Breadcrumbs>
-
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <IconButton onClick={() => navigate(`/trips/${tripId}`)} sx={{ color: 'text.secondary' }}>
-            <ArrowBackIcon />
-          </IconButton>
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="h4" sx={{ fontWeight: 800 }}>
-              📅 Trip Calendar
-            </Typography>
-            {trip && (
-              <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
-                {trip.tripName} · {formatDateRange(trip.startDate, trip.endDate)}
-              </Typography>
-            )}
-          </Box>
-          <IconButton
-            onClick={() => navigate(`/trips/${tripId}/budget`)}
-            sx={{
-              color: 'primary.main',
-              border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-              '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.08) },
-            }}
-          >
-            <AccountBalanceWalletIcon />
-          </IconButton>
+    <Box
+      sx={{
+        p: { xs: 2, sm: 3, md: 4 },
+        maxWidth: 1200,
+        mx: 'auto',
+      }}
+    >
+      {/* Toolbar */}
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          flexDirection: { xs: 'column', md: 'row' },
+          gap: 2, 
+          mb: 4 
+        }}
+      >
+        <TextField
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search bar ......"
+          variant="outlined"
+          size="small"
+          sx={{ flexGrow: 1, bgcolor: theme.palette.background.paper }}
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search />
+                </InputAdornment>
+              ),
+            }
+          }}
+        />
+        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+          <Button variant="outlined" sx={{ bgcolor: theme.palette.background.paper, color: 'text.primary', borderColor: 'divider', borderRadius: 2 }}>
+            Group by
+          </Button>
+          <Button variant="outlined" startIcon={<FilterList />} sx={{ bgcolor: theme.palette.background.paper, color: 'text.primary', borderColor: 'divider', borderRadius: 2 }}>
+            Filter
+          </Button>
+          <Button variant="outlined" startIcon={<Sort />} sx={{ bgcolor: theme.palette.background.paper, color: 'text.primary', borderColor: 'divider', borderRadius: 2 }}>
+            Sort by...
+          </Button>
         </Box>
       </Box>
 
-      {/* ── Error state ────────────────────────────────────────────────── */}
-      {error && (
-        <Card sx={{ mb: 3, border: `1px solid ${theme.palette.error.main}` }}>
-          <CardContent>
-            <Typography color="error" sx={{ fontWeight: 600 }}>
-              Failed to load timeline data. Please try again.
-            </Typography>
-          </CardContent>
-        </Card>
-      )}
+      <Typography variant="h5" sx={{ fontWeight: 700, mb: 4, textAlign: 'center' }}>
+        Calendar View
+      </Typography>
 
-      {/* ── Loading skeleton ───────────────────────────────────────────── */}
-      {isLoading && (
-        <Card>
-          <CardContent sx={{ p: 3 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-              <Skeleton width={200} height={36} />
-              <Skeleton width={300} height={36} />
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        mb: 4,
+        px: { xs: 2, md: 8 }
+      }}>
+        <IconButton><ArrowBack /></IconButton>
+        <Typography variant="h4" sx={{ fontWeight: 800 }}>
+          January 2024
+        </Typography>
+        <IconButton><ArrowForward /></IconButton>
+      </Box>
+
+      {/* Calendar Grid Container */}
+      <Box sx={{ 
+        width: '100%', 
+        border: `1px solid ${theme.palette.divider}`,
+        bgcolor: theme.palette.background.paper
+      }}>
+        {/* Days of week header */}
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', borderBottom: `1px solid ${theme.palette.divider}` }}>
+          {daysOfWeek.map((day) => (
+            <Box key={day} sx={{ p: 2, textAlign: 'center', fontWeight: 600, borderRight: `1px solid ${theme.palette.divider}` }}>
+              {day}
             </Box>
-            <Skeleton variant="rectangular" height={600} sx={{ borderRadius: 2 }} />
-          </CardContent>
-        </Card>
-      )}
+          ))}
+        </Box>
 
-      {/* ── Calendar ───────────────────────────────────────────────────── */}
-      {!isLoading && events && trip && (
-        <Card>
-          <CardContent sx={{ p: 3 }}>
-            {events.length === 0 ? (
-              <Box sx={{ textAlign: 'center', py: 8 }}>
-                <Typography variant="h6" sx={{ color: 'text.secondary', mb: 1 }}>
-                  No activities scheduled yet
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                  Add stops and activities to your trip to see them on the calendar.
-                </Typography>
+        {/* Days Grid */}
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
+          {calendarDays.map((day, idx) => {
+            // Mock highlights
+            let highlightText = '';
+            let isHighlighted = false;
+            let bgColor = 'transparent';
+
+            if (day && day >= 5 && day <= 10) {
+              isHighlighted = true;
+              bgColor = '#e0e0e0';
+              if (day === 5) highlightText = 'PARIS TRIP';
+            } else if (day && day >= 15 && day <= 22) {
+              isHighlighted = true;
+              bgColor = '#bdbdbd';
+              if (day === 15) highlightText = 'NYC - GETAWAY';
+            } else if (day && day >= 25 && day <= 29) {
+              isHighlighted = true;
+              bgColor = '#e0e0e0';
+              if (day === 25) highlightText = 'JAPAN ADVENTURE';
+            }
+
+            return (
+              <Box 
+                key={idx} 
+                sx={{ 
+                  minHeight: 120, 
+                  borderRight: `1px solid ${theme.palette.divider}`, 
+                  borderBottom: `1px solid ${theme.palette.divider}`,
+                  p: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  bgcolor: isHighlighted ? bgColor : 'transparent',
+                  position: 'relative'
+                }}
+              >
+                {day && (
+                  <Typography variant="body1" sx={{ fontWeight: 600, mb: 1 }}>
+                    {day}
+                  </Typography>
+                )}
+                {highlightText && (
+                  <Typography variant="body2" sx={{ fontWeight: 700, mt: 2 }}>
+                    {highlightText}
+                  </Typography>
+                )}
               </Box>
-            ) : (
-              <TripCalendar
-                events={events}
-                tripStartDate={trip.startDate}
-                tripEndDate={trip.endDate}
-                onEventDrop={handleEventDrop}
-              />
-            )}
-          </CardContent>
-        </Card>
-      )}
-    </Container>
+            );
+          })}
+        </Box>
+      </Box>
+    </Box>
   );
-};
-
-export default CalendarPage;
+}

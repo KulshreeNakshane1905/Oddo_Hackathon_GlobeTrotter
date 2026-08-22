@@ -32,6 +32,8 @@ import SharedTripPage from './pages/SharedTripPage';
 import ProfilePage from './pages/ProfilePage';
 import AdminPage from './pages/AdminPage';
 import NotFoundPage from './pages/NotFoundPage';
+import SearchPage from './pages/SearchPage';
+import CommunityPage from './pages/CommunityPage';
 
 function AppContent() {
   const themeMode = useSelector((state: RootState) => state.ui.themeMode);
@@ -56,6 +58,22 @@ function AppContent() {
             <Route path="/admin" element={<AdminPage />} />
 
             {/* Protected routes */}
+            <Route
+              path="/community"
+              element={
+                <ProtectedRoute>
+                  <CommunityPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/search"
+              element={
+                <ProtectedRoute>
+                  <SearchPage />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/dashboard"
               element={
